@@ -35,6 +35,7 @@ async def addmeme(ctx, *args, member: discord.Member = None):
         member = ctx.message.author
     if args:
         if 'youtu' in args[0] or 'gfycat' in args[0] or 'imgur' in args[0] or 'streamable' in args[0] or 'redd' in args[0]:
+
             cur.execute("SELECT status FROM links WHERE link = ?", (args[0],))
             check = cur.fetchone()
             if check is None:
@@ -101,6 +102,7 @@ async def approve(ctx, *args, member: discord.Member = None):
         else:
             return await yeebot.say("You do not have permission to execute this command.")
     else:
+        print("multiple shits accepted")
         limiter = int(args[0])
         cur.execute("SELECT count(*) from links where status = 'review'")
         total_review = int(cur.fetchone()[0])
