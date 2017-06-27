@@ -179,16 +179,95 @@ async def roll(ctx, *args):
                     this_roll = random.randrange(1, int(die) + 1)
                     results.append(this_roll)
                 results_string = ', '.join(str(x) for x in results)
-                return await yeebot.say("{} rolled a d{} {} times and got {}!".format(name, die, mod, results_string))
+                return await yeebot.say("{} rolled a d{} {} times and got `{}`!".format(name, die, mod, results_string))
             elif int(mod) == 1:
                 result = str(random.randrange(1, int(die) + 1))
-                return await yeebot.say("{} rolled a d{} and got {}!".format(name, die, result))
+                return await yeebot.say("{} rolled a d{} and got `{}`!".format(name, die, result))
             else:
                 return await yeebot.say("Please use the format: `!roll <1-6>d<4, 6, 8, 10, 12, 20, 100>` eg: `!roll 2d20`")
         else:
             return await yeebot.say("Please use the format: `!roll <1-6>d<4, 6, 8, 10, 12, 20, 100>` eg: `!roll 2d20`")
     else:
         return await yeebot.say("Please use the format: `!roll <1-6>d<4, 6, 8, 10, 12, 20, 100>` eg: `!roll 2d20`")
+
+
+class Raffle:
+    raffle_live = False
+    raffle_entries = []
+
+    def __init__(self):
+        pass
+
+    def raffle_entry(user):
+        Raffle.raffle_entries.append(user)
+
+    def raffle_drawing():
+        winner = random.choice(Raffle.raffle_entries)
+        Raffle.raffle_entries = []
+        return winner
+
+
+@yeebot.command(pass_context=True)
+async def raffle(ctx):
+    if Raffle.raffle_live:
+        return await yeebot.say("Sorry, there is already a raffle going on right now.")
+    else:
+        roles = []
+        for role in ctx.message.author.roles:
+            roles.append(role.name)
+        if 'Admins' in roles:
+            Raffle.raffle_live = True
+            await yeebot.say("{} has started a raffle! Use `!enter` to make your entry!".format(ctx.message.author.name))
+        else:
+            return await yeebot.say("You don't have permission to do that.")
+
+
+@yeebot.command(pass_context=True)
+async def enter(ctx):
+    if Raffle.raffle_live:
+        if ctx.message.author in Raffle.raffle_entries:
+            return await yeebot.say("You've already entered this raffle!")
+        else:
+            Raffle.raffle_entry(ctx.message.author)
+            return await yeebot.say("Thanks for joining the raffle, {}!".format(ctx.message.author.name))
+    else:
+        return await yeebot.say("Sorry, there isn't a raffle going on right now.")
+
+
+@yeebot.command(pass_context=True)
+async def entries(ctx):
+    if Raffle.raffle_live:
+        roles = []
+        for role in ctx.message.author.roles:
+            roles.append(role.name)
+        if 'Admins' in roles:
+            entries = []
+            for entry in Raffle.raffle_entries:
+                entries.append(entry.name)
+            entries = ', '.join(entries)
+            entry_string = "Current raffle entries: `{}`".format(entries)
+            return await yeebot.say(entry_string)
+        else:
+            return await yeebot.say("You don't have permission to do that.")
+    else:
+        return await yeebot.say("Sorry, there isn't a raffle going on right now.")
+
+
+@yeebot.command(pass_context=True)
+async def endraffle(ctx):
+    if Raffle.raffle_live:
+        roles = []
+        for role in ctx.message.author.roles:
+            roles.append(role.name)
+        if 'Admins' in roles:
+            if Raffle.raffle_live:
+                return await yeebot.say("And the winner of the raffle is...... {}".format(Raffle.raffle_drawing().mention))
+            else:
+                return await yeebot.say("Sorry, there isn't a raffle going on right now.")
+        else:
+            return await yeebot.say("You don't have permission to do that.")
+    else:
+        return await yeebot.say("Sorry, there isn't a raffle going on right now.")
 
 
 @yeebot.command(pass_context=True)
