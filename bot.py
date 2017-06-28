@@ -104,13 +104,13 @@ async def approve(ctx, *args, member: discord.Member = None):
         else:
             return await yeebot.say("You do not have permission to execute this command.")
     else:
-        print("multiple shits accepted")
         limiter = int(args[0])
         cur.execute("SELECT count(*) from links where status = 'review'")
         total_review = int(cur.fetchone()[0])
         if int(total_review) < limiter:
             limiter = int(total_review)
-
+        elif limiter > int(total_review):
+            limiter = 5
         print("limiter = " + str(limiter))
 
         for x in range(0, limiter):
