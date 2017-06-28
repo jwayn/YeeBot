@@ -13,6 +13,7 @@ cur = conn.cursor()
 
 yeebot = Bot(command_prefix="!")
 
+
 @yeebot.event
 async def on_ready():
     print("Client logged in.")
@@ -47,6 +48,7 @@ async def addmeme(ctx, *args, member: discord.Member = None):
                     await yeebot.send_message(yeebot.get_channel(review_channel_id), 'There is 1 link awaiting review.'.format(count))
                 else:
                     await yeebot.send_message(yeebot.get_channel(review_channel_id), 'There are {} links awaiting review.'.format(count))
+                await yeebot.delete_message(ctx.message)
                 return await yeebot.say("`{}` has been submitted for review.".format(args[0]))
             else:
                 return await yeebot.say("Sorry, that link has already been submitted. It is currently in status: `{}`".format(check[0]))
