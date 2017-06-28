@@ -265,7 +265,11 @@ async def endraffle(ctx):
             roles.append(role.name)
         if 'Admins' in roles:
             if Raffle.raffle_live:
-                return await yeebot.say("And the winner of the raffle is...... {}".format(Raffle.raffle_drawing().mention))
+                if Raffle.raffle_entries:
+                    return await yeebot.say("And the winner of the raffle is...... {}".format(Raffle.raffle_drawing().mention))
+                else:
+                    Raffle.raffle_live = False
+                    return await yeebot.say("Cancelling raffle.")
             else:
                 return await yeebot.say("Sorry, there isn't a raffle going on right now.")
         else:
