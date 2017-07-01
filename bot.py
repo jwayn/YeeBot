@@ -103,15 +103,18 @@ async def approve(ctx, *args, member: discord.Member = None):
                 return await yeebot.say("`{}` has been approved.".format(approved_link))
         else:
             return await yeebot.say("You do not have permission to execute this command.")
+
     else:
         limiter = int(args[0])
         cur.execute("SELECT count(*) from links where status = 'review'")
         total_review = int(cur.fetchone()[0])
+
         if int(total_review) < limiter:
             limiter = int(total_review)
-        elif limiter > int(total_review):
+        elif limiter > 5:
             limiter = 5
-        print("limiter = " + str(limiter))
+        else:
+            pass
 
         for x in range(0, limiter):
             cur.execute("SELECT link, submitter FROM links WHERE status = 'review' LIMIT 1")
@@ -142,15 +145,24 @@ async def reject(ctx, *args, member: discord.Member = None):
             if rejected_link:
                 cur.execute("UPDATE links SET status = 'rejected', reviewer = ?, reviewer_id = ? where link = ?", (member.id, member.name, rejected_link))
                 conn.commit()
-                await yeebot.send_message(yeebot.get_channel(general_channel_id), '{} Your link: `{}` has been rejected.'.format(mention, rejected_link))
+                await yeebot.say("{} has been rejected.".format(rejected_link))
+                return await yeebot.send_message(yeebot.get_channel(general_channel_id), '{} Your link: `{}` has been rejected.'.format(mention, rejected_link))
+            else:
+                await yeebot.say("That link hasn't been submitted.")
+
         else:
             return await yeebot.say("You do not have permission to execute this command.")
     else:
         limiter = int(args[0])
         cur.execute("SELECT count(*) from links where status = 'review'")
         total_review = int(cur.fetchone()[0])
+
         if int(total_review) < limiter:
             limiter = int(total_review)
+        elif limiter > 5:
+            limiter = 5
+        else:
+            pass
 
         print("limiter = " + str(limiter))
 
@@ -267,6 +279,7 @@ async def endraffle(ctx):
             if Raffle.raffle_live:
                 if Raffle.raffle_entries:
                     return await yeebot.say("And the winner of the raffle is...... {}".format(Raffle.raffle_drawing().mention))
+                    Raffle.raffle_live = False
                 else:
                     Raffle.raffle_live = False
                     return await yeebot.say("Cancelling raffle.")
