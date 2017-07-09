@@ -14,7 +14,7 @@ cur = conn.cursor()
 yeebot = Bot(command_prefix="!")
 
 
-@yeebot.event
+@yeebot.event()
 async def on_ready():
     print("Client logged in.")
     print(yeebot.user.name)
@@ -40,7 +40,6 @@ async def meme(ctx, *args):
         conn.commit()
         await yeebot.say("Bank of Memerica account created for {}!")
         return await yeebot.say(link + "\n 1 Memebuck removed from {}'s balance.".format(ctx.message.author.name))
-
 
 
 @yeebot.command(pass_context=True)
@@ -153,7 +152,7 @@ async def approve(ctx, *args, member: discord.Member = None):
                 else:
                     cur.execute("INSERT INTO users (user_id, username, meme_bucks) VALUES (?, ?, ?)", (submitter.id, submitter.name, 110))
                     conn.commit()
-                    return await yeebot.say("Bank of Memerica account created for {}!")                
+                    return await yeebot.say("Bank of Memerica account created for {}!")
                 mention = submitter.mention
                 await yeebot.send_message(yeebot.get_channel(general_channel_id), '{} Your link: `{}` has been approved. You have earned 10 memebucks!'.format(mention, approved_link))
                 cur.execute("UPDATE links SET status = 'approved', reviewer_name = ?, reviewer_id = ? where link = ?", (member.name, member.id, approved_link))
@@ -170,12 +169,13 @@ async def approve(ctx, *args, member: discord.Member = None):
             else:
                 cur.execute("INSERT INTO users (user_id, username, meme_bucks) VALUES (?, ?, ?)", (submitter.id, submitter.name, 110))
                 conn.commit()
-                return await yeebot.say("Bank of Memerica account created for {}!")                
+                return await yeebot.say("Bank of Memerica account created for {}!")
             mention = submitter.mention
             await yeebot.send_message(yeebot.get_channel(general_channel_id), '{} Your link: `{}` has been approved. You have earned 10 memebucks!'.format(mention, approved_link))
             cur.execute("UPDATE links SET status = 'approved', reviewer_name = ?, reviewer_id = ? where link = ?", (member.name, member.id, approved_link))
             conn.commit()
             return await yeebot.say("1 link has been approved.")
+
 
 @yeebot.command(pass_context=True)
 async def reject(ctx, *args, member: discord.Member = None):
@@ -384,29 +384,25 @@ async def give(ctx, *args):
             payment = int(args[0])
 
         except ValueError as e:
-            print(e)
             return await yeebot.say("Please use the format `!give <amount> @mention` e.g.: `!give 100 @Yee#8429`")
 
         cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?", (gifter.id,))
         row = cur.fetchone
 
-        #if gifter doesn't have a row, deny them the transaction
+        # if gifter doesn't have a row, deny them the transaction
         if row is None:
             return await yeebot.say("Sorry {}, you haven't made a memebucks account. Use `!memebucks` to create one!".format(ctx.message.author.name))
 
         else:
             gifter_total = int(row()[0])
-            #if the gifter doesn't have enough money to make the payment, deny them
-            if gifter_total - payment < 0:
+            # if the gifter doesn't have enough money to make the payment, deny them
+            if gifter_total - payment <= 0:
                 return await yeebot.say("Sorry {}, you don't have enough memebucks to complete this transaction.".format(ctx.message.author.name))
-            #otherwise, make the payment
+            # otherwise, make the payment
             else:
                 gifter_total -= payment
                 cur.execute("UPDATE users SET meme_bucks = ? WHERE user_id = ?", (gifter_total, gifter.id))
                 conn.commit()
-
-        cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?", (giftee.id,))
-        row = cur.fetchone
 
         try:
             giftee_total = int(row()[0])
