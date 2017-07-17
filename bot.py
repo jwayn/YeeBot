@@ -5,14 +5,10 @@ from discord.utils import find
 import discord
 import random
 
-review_channel_id = '328980594677776384'
-general_channel_id = '329143971693461504'
-
 conn = sqlite3.connect("db/yee.db")
 cur = conn.cursor()
 
 yeebot = Bot(command_prefix="!")
-
 
 @yeebot.event()
 async def on_ready():
