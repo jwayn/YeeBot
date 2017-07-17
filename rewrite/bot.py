@@ -5,6 +5,7 @@ import random
 import sqlite3
 import re
 import secrets
+import cogs
 
 image_link = re.compile('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|'
                         'streamable.com|redd.it)\/[^\ ]*'
@@ -17,7 +18,7 @@ conn = sqlite3.connect('db/yee.db')
 cur = conn.cursor()
 
 yeebot = Bot(command_prefix='!')
-
+startup_extensions = ['cogs.stats']
 
 @yeebot.event
 async def on_ready():
@@ -26,7 +27,13 @@ async def on_ready():
     print(yeebot.user.id)
     print('-----')
     await yeebot.change_presence(game=discord.Game(name="Memes"))
-
+    
+    for extension in startup_extensions:
+        try:
+            yeebot.load_extension(extension)
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            print('Failed to load extensions {}\n {}'.format(extension, exc))
 
 @yeebot.command(pass_context=True)
 async def meme(ctx, *args):
@@ -240,13 +247,13 @@ async def approve(ctx, amount='1'):
                 link_submitter = find(lambda m: m.id == link_row[1],
                                       ctx.message.server.members)
 
-                if link_row[2] == 'rejected' or link_row[2] = 'review':
+                if link_row[2] == 'rejected' or link_row[2] == 'review':
 
                     cur.execute("UPDATE links SET status = 'approved' WHERE "
                                 "link = ?", (link_row[0],))
                      
                     cur.execute("SELECT meme_bucks FROM users WHERE user_id ="
-                                "?;", (link_row[1],)
+                                "?;", (link_row[1],))
                     meme_row = cur.fetchone()
 
                     if meme_row:
@@ -271,7 +278,7 @@ async def approve(ctx, amount='1'):
                                                   'Bank of Memerica account '
                                                   'was established on your '
                                                   'behalf. Your new balance '
-                                                  'is 110. Happy meming!'
+                                                  'is 110. Happy meming!')
 
 
                     return await yeebot.say('`{}` has been approved.'

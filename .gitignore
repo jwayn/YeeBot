@@ -50,3 +50,5 @@ dbcreate.py
 links.py
 rewrite/db
 rewrite/db/*
+*.swp
+__pycache__
