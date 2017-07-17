@@ -230,86 +230,129 @@ async def approve(ctx, amount='1'):
         except ValueError:
             # TODO 
             # approve 1 link and give person 10 memebucks
-            print('value error')
+            cur.execute("SELECT link, submitter_id, status FROM links WHERE link = ?"
+                        , (amount, ))
+
+            link_row = cur.fetchone()
+
+            if link_row:
+
+                if link_row[2] == 'rejected' or link_row[2] == 'review':
+
+                    link_submitter = find(lambda m: m.id == link_row[1],
+                                          ctx.message.server.members)
+
+
+                    cur.execute("UPDATE links SET status = 'approved' WHERE "
+                                "link = ?", (link_row[0],))
+
+                    cur.execute("UPDATE users SET meme_bucks = meme_bucks + 1"
+                                " WHERE user_id = ?", (link_row[1],))
+
+                    conn.commit()
+                    
+                    cur.execute("SELECT meme_bucks FROM users WHERE user_id ="
+                                "?;", (link_row[1],)
+                    meme_row = cur.fetchone()
+
+                    await yeebot.send_message(link_submitter, 'Your link `{}`'
+                                              ' has been approved. Your new b'
+                                              'alance is: {}'
+                                              .format(link_row[0],
+                                                      meme_row[0]))
+
+
+                    return await yeebot.say('`{}` has been approved.'
+                                            .format(link_row[0]))
+                    
+                else:
+                    return await yeebot.say('That link is already approved.')
+
+            else:
+                return await yeebot.say('That link has not been submitted.')
+
 
 @yeebot.command(pass_context=True)
 async def reject(ctx, amount='1'):
-    sender = ctx.message.author
+
+    sender = ctx.message.author 
     
-    try:
-        if int(amount) < 1 or int(amount) > 5:
-            return await yeebot.say('Please use the format `!reject <1-5|link>`')
-        
-        elif int(amount) >= 1 and int(amount) <= 5:
-            cur.execute("SELECT link, submitter_id FROM links WHERE status = "
-                        "'review' LIMIT ?;", (amount,))
-            rows = cur.fetchall()
+    if ctx.message.channel.id == secrets.REVIEW_CHANNEL_ID:
+        try:
+            if int(amount) < 1 or int(amount) > 5:
+                return await yeebot.say('Please use the format `!reject <1-5|link>`')
             
-            for row in rows:
+            elif int(amount) >= 1 and int(amount) <= 5:
+                cur.execute("SELECT link, submitter_id FROM links WHERE status = "
+                            "'review' LIMIT ?;", (amount,))
+                rows = cur.fetchall()
+                
+                for row in rows:
+                    link_submitter = find(lambda m: m.id == row[1],
+                                          ctx.message.server.members)
+                        
+                    cur.execute("UPDATE links SET status = 'rejected' WHERE link =?",
+                                (row[0],))
+                    conn.commit()
+                    await yeebot.send_message(link_submitter, 'Your link {} has been'
+                                              ' rejected.')
+                
+                return await yeebot.say('{} link(s) rejected.'.format(amount))
+
+        except ValueError:
+            cur.execute("SELECT link, submitter_id, status FROM links WHERE link = "
+                        "?;", (amount,))
+
+            row = cur.fetchone()
+            
+            if row:
+
                 link_submitter = find(lambda m: m.id == row[1],
                                       ctx.message.server.members)
+
+                if row[2] == 'approved' or row[2] == 'review':
+                    #take away money, and set to rejected
+                    cur.execute("UPDATE links SET status = 'rejected' WHERE link ="
+                                " ?", (row[0],))
+                    cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?",
+                                (row[1],))
+                    bucks_row = cur.fetchone()
+                    meme_bucks = bucks_row[0]
+                    if meme_bucks - 10 < 0:
+                        cur.execute("UPDATE users SET meme_bucks = 0 WHERE "
+                                    "user_id = ?", (row[1],))
+                    else:
+                        cur.execute("UPDATE users SET meme_bucks = meme_bucks - 10"
+                                    " WHERE user_id = ?", (row[1],))
+                    conn.commit()
                     
-                cur.execute("UPDATE links SET status = 'rejected' WHERE link =?",
-                            (row[0],))
-                conn.commit()
-                await yeebot.send_message(link_submitter, 'Your link {} has been'
-                                          ' rejected.')
-            
-            return await yeebot.say('{} link(s) rejected.'.format(amount))
+                    #send message to user with balance and link in question
+                    cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?",
+                                (row[1],))
 
-    except ValueError:
-        cur.execute("SELECT link, submitter_id, status FROM links WHERE link = "
-                    "?;", (amount,))
+                    balance_row = cur.fetchone()
+                    balance = balance_row[0]
 
-        row = cur.fetchone()
-        
-        if row:
-
-            link_submitter = find(lambda m: m.id == row[1],
-                                  ctx.message.server.members)
-
-            if row[2] == 'approved':
-                #take away money, and set to rejected
-                cur.execute("UPDATE links SET status = 'rejected' WHERE link ="
-                            " ?", (row[1],))
-                cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?",
-                            (row[1],))
-                bucks_row = cur.fetchone()
-                meme_bucks = bucks_row[0]
-                if meme_bucks - 10 < 0:
-                    cur.execute("UPDATE users SET meme_bucks = 0 WHERE "
-                                "user_id = ?", (row[1],))
+                    await yeebot.send_message(link_submitter, 'Your link'
+                                                     ' {} has been rejected. You'
+                                                     'r new balance is {}. Thank'
+                                                     's for trying.'
+                                                     .format(row[0], balance))
                 else:
-                    cur.execute("UPDATE users SET meme_bucks = meme_bucks - 10"
-                                " WHERE user_id = ?", (row[1],))
-                conn.commit()
-                
-                #send message to user with balance and link in question
-                cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?",
-                            (row[1],))
+                    #set to rejected
+                    cur.execute("UPDATE links SET status = 'rejected' WHERE link="
+                                "?;", (row[0],))
+                    #send message to user with link in question
+                    await yeebot.send_message(link_submitter, 'Your link '
+                                                     '{} has been rejected.'
+                                                     .format(row[0]))
 
-                balance_row = cur.fetchone()
-                balance = balance_row[0]
+                return await yeebot.say('`{}` has been rejected.'.format(row[0]))
 
-                await yeebot.send_message(link_submitter, 'Your link'
-                                                 ' {} has been rejected. You'
-                                                 'r new balance is {}. Thank'
-                                                 's for trying.'
-                                                 .format(row[0], balance))
             else:
-                #set to rejected
-                cur.execute("UPDATE links SET status = 'rejected' WHERE link="
-                            "?;", (row[0],))
-                #send message to user with link in question
-                await yeebot.send_message(link_submitter, 'Your link '
-                                                 '{} has been rejected.'
-                                                 .format(row[0]))
-
-            return await yeebot.say('`{}` has been rejected.'.format(row[0]))
-
-        else:
-            return await yeebot.say("Link doesn't exist in the database.")
-
+                return await yeebot.say("Link doesn't exist in the database.")
+    else:
+        pass
 
 
 yeebot.run(secrets.BOT_TOKEN)
