@@ -10,13 +10,18 @@ class Stats:
         self.conn = sqlite3.connect('db/yee.db')
         self.cur = self.conn.cursor()
 
-    @commands.command()
-    async def whatever(self):
-        return await self.yeebot.say('whatever')
-
     @commands.command(pass_context=True)
-    async def substats(self, context):
-        channel = context.message.channel
+    async def requesters(self, ctx):
+        channel = ctx.message.channel
+        
+        names = []
+        times_memed = []
+
+        self.cur.execute("SELECT username, memes_requested FROM users ORDER BY memes_requested DESC LIMIT 5;")
+
+    @commands.command(pass_context=True, hidden=True)
+    async def submitters(self, ctx):
+        channel = ctx.message.channel
 
         names = []
         submissions = []
@@ -42,19 +47,55 @@ class Stats:
             rejected.append(int(num_rej[0]))
 
         N = np.arange(len(names))
-        width = 0.5
+        width = 0.4
         approved_bar = plt.bar(N, approved, width, color="green", edgecolor = "none")
         rejected_bar = plt.bar(N, rejected, width, color="red", bottom=approved, edgecolor="none")
-        plt.title('Memes approved & rejected')
-        plt.ylabel('Memes Submitted')
+
+        bars = [rejected_bar, approved_bar]
+        
+        counter = 0
+        bar_counter = 0
+
+        bar_heights = []
+        percentages = []
+
+        for x in range(0, len(approved)):
+            percentages.append(int(100 * (approved[x] / (approved[x] + rejected[x]))))
+
+        for container in rejected_bar:
+            bar_heights.append(container.get_height())
+        for container in approved_bar:
+            bar_heights[counter] = bar_heights[counter] + container.get_height()
+            counter += 1
+        for container in approved_bar:
+            plt.text(container.get_x() + container.get_width() + 0.325, bar_heights[bar_counter] / 2, str(int(bar_heights[bar_counter])), ha='center', va='center')
+            bar_counter += 1
+
+        for bar in bars:
+            for container in bar:
+                height = container.get_height()
+                y = container.get_y()
+                width = container.get_width()
+                x = container.get_x()
+                plt.text(x + (width / 2), y + (height / 2), str(int(height)), ha='center', va='center')
+                
+
+        plt.title('Top 5 Submitters by Volume')
+        plt.ylabel('# Memes Submitted')
         plt.xticks(N, names)
+        
         plt.figlegend((approved_bar, rejected_bar),
                       ('Approved', 'Rejected'),
                       'upper right')
-
         plt.savefig('cogs/output/stats.png')
-
-        return await self.yeebot.send_file(channel, 'cogs/output/stats.png')
+       
+        yeestring = '```\n'
+        for x in range(0, len(names)):
+            yeestring += '{}: {}% approval rate.\n'.format(names[x], percentages[x])
+        yeestring += '```'
+        
+        await self.yeebot.send_file(channel, 'cogs/output/stats.png')
+        return await self.yeebot.say(yeestring)
 
 def setup(yeebot):
     yeebot.add_cog(Stats(yeebot))
