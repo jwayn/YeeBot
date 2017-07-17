@@ -234,32 +234,44 @@ async def approve(ctx, amount='1'):
                         , (amount, ))
 
             link_row = cur.fetchone()
-
+            
             if link_row:
+                
+                link_submitter = find(lambda m: m.id == link_row[1],
+                                      ctx.message.server.members)
 
-                if link_row[2] == 'rejected' or link_row[2] == 'review':
-
-                    link_submitter = find(lambda m: m.id == link_row[1],
-                                          ctx.message.server.members)
-
+                if link_row[2] == 'rejected' or link_row[2] = 'review':
 
                     cur.execute("UPDATE links SET status = 'approved' WHERE "
                                 "link = ?", (link_row[0],))
-
-                    cur.execute("UPDATE users SET meme_bucks = meme_bucks + 1"
-                                " WHERE user_id = ?", (link_row[1],))
-
-                    conn.commit()
-                    
+                     
                     cur.execute("SELECT meme_bucks FROM users WHERE user_id ="
                                 "?;", (link_row[1],)
                     meme_row = cur.fetchone()
 
-                    await yeebot.send_message(link_submitter, 'Your link `{}`'
-                                              ' has been approved. Your new b'
-                                              'alance is: {}'
-                                              .format(link_row[0],
-                                                      meme_row[0]))
+                    if meme_row:
+                        cur.execute("UPDATE users SET meme_bucks = meme_bucks"
+                                    " + 1 WHERE user_id = ?", (link_row[1],))
+                        con.commit()
+                        cur.execute("SELECT meme_bucks FROM users WHERE"
+                                    "user_id = ?;", (link_row[1],))
+
+                        await yeebot.send_message(link_submitter, 'Your link '
+                                                  '`{}` has been approved. '
+                                                  'Your new balance is {}.'
+                                                  .format(link_row[0],
+                                                          meme_row[0]))
+                    else:          
+                        cur.execute("INSERT INTO users (user_id, username, me"
+                                    "me_bucks) VALUES (?, ?, ?);",
+                                    (submitter.id, submitter_name, 110))
+                        conn.commit()
+                        await yeebot.send_message(link_submitter, 'Your link '
+                                                  '`{}` was approved, and a '
+                                                  'Bank of Memerica account '
+                                                  'was established on your '
+                                                  'behalf. Your new balance '
+                                                  'is 110. Happy meming!'
 
 
                     return await yeebot.say('`{}` has been approved.'
@@ -310,7 +322,7 @@ async def reject(ctx, amount='1'):
                 link_submitter = find(lambda m: m.id == row[1],
                                       ctx.message.server.members)
 
-                if row[2] == 'approved' or row[2] == 'review':
+                if row[2] == 'approved':
                     #take away money, and set to rejected
                     cur.execute("UPDATE links SET status = 'rejected' WHERE link ="
                                 " ?", (row[0],))
@@ -338,6 +350,7 @@ async def reject(ctx, amount='1'):
                                                      'r new balance is {}. Thank'
                                                      's for trying.'
                                                      .format(row[0], balance))
+
                 else:
                     #set to rejected
                     cur.execute("UPDATE links SET status = 'rejected' WHERE link="
