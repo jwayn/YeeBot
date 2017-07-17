@@ -49,5 +49,4 @@ secrets.py
 dbcreate.py
 links.py
 rewrite/db
-rewrite/__pycache__
-rewrite/.bot.py.swp
+rewrite/db/*
