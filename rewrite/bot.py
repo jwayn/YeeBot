@@ -18,7 +18,7 @@ conn = sqlite3.connect('db/yee.db')
 cur = conn.cursor()
 
 yeebot = Bot(command_prefix='!')
-startup_extensions = ['cogs.stats']
+startup_extensions = ['cogs.stats', 'cogs.raffle', 'cogs.misc']
 
 @yeebot.event
 async def on_ready():
@@ -58,7 +58,7 @@ async def meme(ctx, *args):
             submitter = row[1]
 
             return await yeebot.say(link + "\n Please enjoy this delicious "
-                                    "meme brought to you by '{}'. Thank you "
+                                    "meme brought to you by `{}`. Thank you "
                                     "for your patronage.".format(submitter))
 
         else:
@@ -99,8 +99,6 @@ async def addmeme(ctx, *args):
                 cur.execute("INSERT INTO links (link, status, submitter_id,"
                             " submitter_name) VALUES (?, 'review', ?, ?);",
                             (args[0], sender.id, sender.name))
-                cur.execute("UPDATE users SET memes_submitted = memes_submi"
-                            "tted + 1 WHERE user_id = ?;", (sender.id,))
                 conn.commit()
 
                 await yeebot.delete_message(ctx.message)
@@ -360,19 +358,35 @@ async def reject(ctx, amount='1'):
 
                 else:
                     #set to rejected
-                    cur.execute("UPDATE links SET status = 'rejected' WHERE link="
-                                "?;", (row[0],))
+                    cur.execute("UPDATE links SET status = 'rejected' WHERE"
+                                "link=?;", (row[0],))
                     #send message to user with link in question
                     await yeebot.send_message(link_submitter, 'Your link '
                                                      '{} has been rejected.'
                                                      .format(row[0]))
 
-                return await yeebot.say('`{}` has been rejected.'.format(row[0]))
+                return await yeebot.say('`{}` has been rejected.'
+                                        .format(row[0]))
 
             else:
                 return await yeebot.say("Link doesn't exist in the database.")
     else:
         pass
+
+
+@yeebot.command(pass_context=True)
+async def balance(ctx):
+    sender = ctx.message.author
+    cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?;",
+                (sender.id,))
+    row = cur.fetchone()
+    if row:
+        return await yeebot.say('{}, your balance is {} memebucks.'
+                                .format(sender.name, row[0]))
+    else:
+        return await yeebot.say("Sorry {}, you haven't setup a Bank of Memeri"
+                                "ca account yet. Use `!memebucks` to start!"
+                                .format(sender.name))
 
 
 yeebot.run(secrets.BOT_TOKEN)

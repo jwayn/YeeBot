@@ -10,8 +10,8 @@ class Stats:
         self.conn = sqlite3.connect('db/yee.db')
         self.cur = self.conn.cursor()
 
-    @commands.command(pass_context=True)
-    async def requesters(self, ctx):
+    @commands.command(pass_context=True, hidden=True)
+    async def reqstats(self, ctx):
         channel = ctx.message.channel
         
         names = []
@@ -19,8 +19,24 @@ class Stats:
 
         self.cur.execute("SELECT username, memes_requested FROM users ORDER BY memes_requested DESC LIMIT 5;")
 
+        rows = self.cur.fetchall()
+        for row in rows:
+            names.append(row[0])
+            times_memed.append(row[1])
+        
+        
+        yeestring = 'Memes Requested:\n```\n'
+        for x in range(0, len(names)):
+            yeestring += '{}: {}\n'.format(names[x], times_memed[x])
+        yeestring += '```'
+
+        return await self.yeebot.say(yeestring)
+        
+
+
+
     @commands.command(pass_context=True, hidden=True)
-    async def submitters(self, ctx):
+    async def substats(self, ctx):
         channel = ctx.message.channel
 
         names = []
@@ -68,7 +84,7 @@ class Stats:
             bar_heights[counter] = bar_heights[counter] + container.get_height()
             counter += 1
         for container in approved_bar:
-            plt.text(container.get_x() + container.get_width() + 0.325, bar_heights[bar_counter] / 2, str(int(bar_heights[bar_counter])), ha='center', va='center')
+            plt.text(container.get_x() + container.get_width() + 0.02, bar_heights[bar_counter] / 2, str(int(bar_heights[bar_counter])), ha='left', va='center')
             bar_counter += 1
 
         for bar in bars:
