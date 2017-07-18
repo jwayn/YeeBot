@@ -3,7 +3,7 @@
 
 Everything is slowly being moved into the rewrite. Once complete, that will become the root directory.
 
-There is a [Trello](https://trello.com/b/70M7ljxB/yeebot) project tracking the project.
+There is a [Trello](https://trello.com/b/70M7ljxB/yeebot) project tracking the progress of YeeBot.
 
 #### TODO:
 * Move all meme commands to their own cog
