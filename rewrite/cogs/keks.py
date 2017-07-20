@@ -1,14 +1,17 @@
-import discord, time, feedparser, json, sqlite3, re, random
-from bs4 import BeautifulSoup as BS
+import sqlite3, re, random, praw, secrets
 from discord.ext import commands
+
 
 class Keks:
 
-    used_links = []
     i_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|streamable.com|redd.i'
                 't)\/[^\ ]*(?:.gif|.gifv|.png|.jpg|.jpeg|.mp4|.apng|.tiff)$')
     v_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|youtu.be|youtube.com'
                 '|twitch.tv)\/[^\ ]*')
+
+    reddit = praw.Reddit(client_id=secrets.CLIENT_ID,
+                         client_secret=secrets.REDDIT_TOKEN,
+                         user_agent=secrets.USER_AGENT)
 
     def __init__(self, yeebot):
         self.yeebot = yeebot
@@ -20,26 +23,19 @@ class Keks:
 
     def get_link(self):
         self.cur.execute("SELECT url FROM subs WHERE status = 'approved';")
-        feed_urls = self.cur.fetchall()
-        if not feed_urls:
+        subreddits = self.cur.fetchall()
+        if not subreddits:
             return "Blank"
 
-        count = len(feed_urls)
-
-        rand = random.randint(0, count - 1)
-
-        parsed_feed = feedparser.parse( feed_urls[rand][0] )
-        links = parsed_feed['entries']
-        string = str( links[0] )
-        data = links[0]["content"][0]["value"]
-        soup = BS(data, "html.parser")
-        for imgtag in soup.find_all('a'):
-            tag = imgtag['href']
-            if tag:
-                v_link = self.video_link.match(tag)
-                i_link = self.image_link.match(tag)
-                if v_link or i_link:
-                    return tag
+        subreddit = self.reddit.subreddit(random.choice(subreddits)[0])
+        submissions = subreddit.new(limit=5)
+        for submission in submissions:
+            v_link = self.video_link.match(submission.url)
+            i_link = self.image_link.match(submission.url)
+            if v_link or i_link:
+                return submission.url
+            else:
+                pass
 
     @commands.command(pass_context=True)
     async def topkek(self, ctx):
@@ -66,28 +62,33 @@ class Keks:
                 if row:
                     self.cur.execute("INSERT INTO links (link, status, submitter_id, submitter_name)"
                                      "VALUES (?, 'review', ?, ?);", (link, sender.id, sender.name,))
-                    self.cur.execute("UPDATE users SET meme_bucks = meme_bucks + 10 WHERE user_id = ?;", (sender.id,))
+                    self.cur.execute("COMMIT;")
+
+                    self.cur.execute("UPDATE users SET meme_bucks = meme_bucks + 1 WHERE user_id = ?;", (sender.id,))
+                    self.cur.execute("COMMIT;")
+
                     return await self.yeebot.say(  "Top kek: " + str(link) + " has also been submitted "
-                                                   "for review. Here's 10 memebucks")
+                                                   "for review. Here's 1 memebuck for your miniscule time")
                 else:
                     self.cur.execute("INSERT INTO links (link, status, submitter_id, submitter_name)"
                                      "VALUES (?, 'review', ?, ?);", (link, sender.id, sender.name,))
+                    self.cur.execute("COMMIT;")
+
                     return await self.yeebot.say( "Top kek: " + str(link) + " You are not registered for memebucks,"
                                                   " and therefore will not be eligible for credit.")
 
     @commands.command(pass_context=False)
     async def addsub(self, *args):
 
-        if "https://reddit.com/r/" not in args[0]:
-            return await self.yeebot.say("Submission must be a subreddit.")
-
-        self.cur.execute("SELECT url FROM subs WHERE url = ?;", (args[0] + ".rss",))
+        self.cur.execute("SELECT url FROM subs WHERE url = ?;", (args[0],))
         row = self.cur.fetchone()
 
         if row:
             return await self.yeebot.say("This subreddit has already been submitted.")
         else:
-            self.cur.execute("INSERT INTO subs (url, status) VALUES (?, 'review');", (args[0] + ".rss",))
+            self.cur.execute("INSERT INTO subs (url, status) VALUES (?, 'review');", (args[0],))
+            self.cur.execute("COMMIT;")
+
             return await self.yeebot.say("Subreddit submitted for review")
 
     @commands.command(pass_context=False)
@@ -130,6 +131,8 @@ class Keks:
             else:
                 row = subs_to_approve[sub - 1]
                 self.cur.execute("UPDATE subs SET status = 'approved' WHERE url = ?;", (row[0],))
+                self.cur.execute("COMMIT;")
+
                 return await self.yeebot.say("Sub {} has been approved.".format(row[0],))
 
 def setup(yeebot):
