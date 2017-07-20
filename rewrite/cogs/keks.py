@@ -51,7 +51,7 @@ class Keks:
             return
         elif link == "Blank":
             return await self.yeebot.say("There are no subreddits to retrieve the toppest keks from, "
-                                         "Please submit subreddits using !addsub <subreddit url>")
+                                         "Please submit subreddits using !addsub <subreddit name>")
         else:
             self.cur.execute("SELECT * FROM links WHERE link = ?;", (link,))
             link_exists = self.cur.fetchone()
