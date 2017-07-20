@@ -100,7 +100,7 @@ class Keks:
         if amount < 1 or amount > 5:
             return await self.yeebot.say('Please use the format `!subreview'
                                              ' <1-5>`')
-        elif amount >= 1 and amount <= 5:
+        elif 1 <= amount <= 5:
             self.cur.execute("SELECT url FROM subs WHERE status = 'review' LIMIT ?;", (amount,))
 
             subs_to_approve = self.cur.fetchall()
@@ -122,7 +122,7 @@ class Keks:
         if sub < 1 or sub > 5:
             return await self.yeebot.say('Please use the format `!subapprove'
                                              ' <1-5>`')
-        elif sub >= 1 and sub <= 5:
+        elif 1 <= sub <= 5:
             self.cur.execute("SELECT url FROM subs WHERE status = 'review';")
 
             subs_to_approve = self.cur.fetchall()
@@ -134,6 +134,28 @@ class Keks:
                 self.conn.commit()
 
                 return await self.yeebot.say("Sub {} has been approved.".format(row[0],))
+
+    @commands.command(pass_context=False)
+    async def subreject(self, sub=1):
+
+        if not sub:
+            return await self.yeebot.say('Please use the format `!subreject'
+                                         ' <1-5>`')
+        if sub < 1 or sub > 5:
+            return await self.yeebot.say('Please use the format `!subreject'
+                                             ' <1-5>`')
+        elif 1 <= sub <= 5:
+            self.cur.execute("SELECT url FROM subs WHERE status = 'review';")
+
+            subs_to_approve = self.cur.fetchall()
+            if not subs_to_approve:
+                return await self.yeebot.say("There are no pending sub reviews")
+            else:
+                row = subs_to_approve[sub - 1]
+                self.cur.execute("DELETE FROM subs WHERE url = ?;", (row[0],))
+                self.conn.commit()
+
+                return await self.yeebot.say("Sub {} has been rejected.".format(row[0],))
 
 def setup(yeebot):
     yeebot.add_cog(Keks(yeebot))
