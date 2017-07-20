@@ -157,5 +157,6 @@ class Keks:
 
                 return await self.yeebot.say("Sub {} has been rejected.".format(row[0],))
 
+
 def setup(yeebot):
     yeebot.add_cog(Keks(yeebot))
