@@ -67,8 +67,8 @@ class Keks:
                     self.cur.execute("UPDATE users SET meme_bucks = meme_bucks + 1 WHERE user_id = ?;", (sender.id,))
                     self.conn.commit()
 
-                    return await self.yeebot.say(  "Top kek: " + str(link) + " has also been submitted "
-                                                   "for review. Here's 1 memebuck for your miniscule time")
+                    return await self.yeebot.say(  "Top kek: " + str(link) + " has been submitted "
+                                                   "for review. Here's 1 memebuck for your miniscule effort")
                 else:
                     self.cur.execute("INSERT INTO links (link, status, submitter_id, submitter_name)"
                                      "VALUES (?, 'review', ?, ?);", (link, sender.id, sender.name,))
