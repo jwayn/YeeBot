@@ -1,8 +1,8 @@
 import sqlite3
 import matplotlib.pyplot as plt
 import numpy as np
-import discord
 from discord.ext import commands
+
 
 class Stats:
     def __init__(self, yeebot):
@@ -23,17 +23,13 @@ class Stats:
         for row in rows:
             names.append(row[0])
             times_memed.append(row[1])
-        
-        
+
         yeestring = 'Memes Requested:\n```\n'
         for x in range(0, len(names)):
             yeestring += '{}: {}\n'.format(names[x], times_memed[x])
         yeestring += '```'
 
         return await self.yeebot.say(yeestring)
-        
-
-
 
     @commands.command(pass_context=True, hidden=True)
     async def substats(self, ctx):
@@ -94,7 +90,6 @@ class Stats:
                 width = container.get_width()
                 x = container.get_x()
                 plt.text(x + (width / 2), y + (height / 2), str(int(height)), ha='center', va='center')
-                
 
         plt.title('Top 5 Submitters by Volume')
         plt.ylabel('# Memes Submitted')
@@ -112,6 +107,7 @@ class Stats:
         
         await self.yeebot.send_file(channel, 'cogs/output/stats.png')
         return await self.yeebot.say(yeestring)
+
 
 def setup(yeebot):
     yeebot.add_cog(Stats(yeebot))

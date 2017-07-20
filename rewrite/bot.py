@@ -1,11 +1,8 @@
 import discord
 from discord.ext.commands import Bot
-from discord.utils import find
-import random
 import sqlite3
 import re
 import secrets
-import cogs
 
 image_link = re.compile('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|'
                         'streamable.com|redd.it)\/[^\ ]*'
@@ -34,7 +31,6 @@ async def on_ready():
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
             print('Failed to load extensions {}\n {}'.format(extension, exc))
-
 
 
 yeebot.run(secrets.BOT_TOKEN)

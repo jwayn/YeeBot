@@ -9,7 +9,7 @@ class Keks:
     v_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|youtu.be|youtube.com'
                 '|twitch.tv)\/[^\ ]*')
 
-    reddit = praw.Reddit(client_id=secrets.CLIENT_ID,
+    reddit = praw.Reddit(client_id=secrets.REDDIT_CLIENT_ID,
                          client_secret=secrets.REDDIT_TOKEN,
                          user_agent=secrets.USER_AGENT)
 
@@ -62,17 +62,17 @@ class Keks:
                 if row:
                     self.cur.execute("INSERT INTO links (link, status, submitter_id, submitter_name)"
                                      "VALUES (?, 'review', ?, ?);", (link, sender.id, sender.name,))
-                    self.cur.execute("COMMIT;")
+                    self.conn.commit()
 
                     self.cur.execute("UPDATE users SET meme_bucks = meme_bucks + 1 WHERE user_id = ?;", (sender.id,))
-                    self.cur.execute("COMMIT;")
+                    self.conn.commit()
 
                     return await self.yeebot.say(  "Top kek: " + str(link) + " has also been submitted "
                                                    "for review. Here's 1 memebuck for your miniscule time")
                 else:
                     self.cur.execute("INSERT INTO links (link, status, submitter_id, submitter_name)"
                                      "VALUES (?, 'review', ?, ?);", (link, sender.id, sender.name,))
-                    self.cur.execute("COMMIT;")
+                    self.conn.commit()
 
                     return await self.yeebot.say( "Top kek: " + str(link) + " You are not registered for memebucks,"
                                                   " and therefore will not be eligible for credit.")
@@ -87,7 +87,7 @@ class Keks:
             return await self.yeebot.say("This subreddit has already been submitted.")
         else:
             self.cur.execute("INSERT INTO subs (url, status) VALUES (?, 'review');", (args[0],))
-            self.cur.execute("COMMIT;")
+            self.conn.commit()
 
             return await self.yeebot.say("Subreddit submitted for review")
 
@@ -131,7 +131,7 @@ class Keks:
             else:
                 row = subs_to_approve[sub - 1]
                 self.cur.execute("UPDATE subs SET status = 'approved' WHERE url = ?;", (row[0],))
-                self.cur.execute("COMMIT;")
+                self.conn.commit()
 
                 return await self.yeebot.say("Sub {} has been approved.".format(row[0],))
 
