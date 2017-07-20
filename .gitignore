@@ -45,10 +45,7 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-secrets.py
-dbcreate.py
 links.py
-rewrite/db
-rewrite/db/*
 *.swp
 __pycache__
+

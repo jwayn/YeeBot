@@ -10,3 +10,7 @@ There is a [Trello](https://trello.com/b/70M7ljxB/yeebot) project tracking the p
 * Complete the new raffle system
 * Add a status command to check on meme statuses
 
+### Getting Started:
+* Clone YeeBot
+* add your bots token to secrets.py by replacing <TOKEN>
+* profit

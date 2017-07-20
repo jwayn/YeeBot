@@ -1,5 +1,4 @@
 import sqlite3
-import discord
 from discord.ext import commands
 
 memebuck = '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]'
@@ -25,6 +24,7 @@ class Memebucks:
             self.cur.execute("INSERT INTO users (user_id, username, meme_buck"
                              "s) VALUES (?,?,?);",
                              (sender.id, sender.name, 100))
+            self.conn.commit()
             return await self.yeebot.say('Congratulations! You have establish'
                                          'ed an account with the Bank of Meme'
                                          'rica! Your account balance is\n{} *'
