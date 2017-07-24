@@ -5,10 +5,10 @@ from discord.ext import commands
 from discord.utils import find
 import secrets
 
-i_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|streamable.com|redd.i'
+i_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|redd.i'
             't)\/[^\ ]*(?:.gif|.gifv|.png|.jpg|.jpeg|.mp4|.apng|.tiff)$')
-v_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|youtu.be|youtube.com'
-            '|twitch.tv)\/[^\ ]*')
+v_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|streamable.com'
+            '|youtu.be|youtube.com|twitch.tv)\/[^\ ]*')
 memebuck = '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲'
 
 
