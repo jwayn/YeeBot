@@ -4,7 +4,7 @@
 Everything is slowly being moved into the rewrite. Once complete, that will become the root directory.
 
 ### TODO:
-There is a [Trello](https://trello.com/b/70M7ljxB/yeebot) project tracking the progress of YeeBot.
+There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the progress of YeeBot.
 
 ### Getting Started:
 * Clone YeeBot
