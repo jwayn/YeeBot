@@ -48,4 +48,5 @@ Temporary Items
 links.py
 *.swp
 __pycache__
-
+db
+*/db
