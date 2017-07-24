@@ -1,8 +1,9 @@
 import sqlite3
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from discord.ext import commands
-
+matplotlib.use('GTKagg')
 
 class Stats:
     def __init__(self, yeebot):
