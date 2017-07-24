@@ -9,10 +9,12 @@ There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the p
 ### Getting Started:
 * Clone YeeBot
 * Install a few modules via PIP:
+
   * discord.py
   * matplotlib
   * praw
   * numpy
+  
 * Create a 'secrets.py' file in the root directory of yeebot with the following information:
 ```python
     BOT_TOKEN = '<bot_token here>'
