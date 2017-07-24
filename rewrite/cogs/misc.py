@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import random
 import discord
-=======
->>>>>>> a4ca48e6ddcc49b2dd901516850fa5105001b8e3
 from discord.ext import commands
 
 class Misc:
@@ -51,7 +48,8 @@ class Misc:
         else:
             if die in ['4', '6', '8', '10', '12', '20', '100']:
                this_roll = random.randrange(1, int(die) + 1)
-               return await self.yeebot.say("{} rolled a d{} and got `{}`!".format(name, die, str(this_roll)))
+               return await self.yeebot.say("{} rolled a d{} and got `{}`!"
+                                            .format(name, die, str(this_roll)))
             else:
                 return await self.yeebot.say(elstring)
 
