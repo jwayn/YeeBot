@@ -51,4 +51,5 @@ links.py
 rewrite/db
 rewrite/db/*
 *.swp
+stats.png
 __pycache__
