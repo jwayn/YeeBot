@@ -3,6 +3,7 @@ import discord
 import re
 from discord.ext import commands
 from discord.utils import find
+import secrets
 
 i_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|streamable.com|redd.i'
             't)\/[^\ ]*(?:.gif|.gifv|.png|.jpg|.jpeg|.mp4|.apng|.tiff)$')
@@ -20,8 +21,9 @@ class Memes:
         self.image_link = re.compile(i_string)
         self.video_link = re.compile(v_string)
 
-    @commands.command(pass_context=True)
-    async def meme(self, ctx, *args):
+    @commands.command(pass_context=True,
+                      description='Return a random meme')
+    async def meme(self, ctx):
         sender = ctx.message.author
 
         meme_bucks_row = self.cur.execute("SELECT meme_bucks FROM users WHERE "
@@ -347,7 +349,8 @@ class Memes:
                         self.conn.commit()
                         await self.yeebot.send_message(link_submitter,
                                                        'Your link {} has been '
-                                                       'rejected.')
+                                                       'rejected.'
+                                                       .format(row[0]))
 
                     return await self.yeebot.say('{} link(s) rejected.'
                                                  .format(amount))
