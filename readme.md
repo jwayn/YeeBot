@@ -4,10 +4,21 @@
 Everything is slowly being moved into the rewrite. Once complete, that will become the root directory.
 
 ### TODO:
-There is a [Trello](https://trello.com/b/70M7ljxB/yeebot) project tracking the progress of YeeBot.
+There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the progress of YeeBot.
 
 ### Getting Started:
 * Clone YeeBot
+* PIP requirements:
+
+  * discord.py
+  * matplotlib
+  * praw
+  * numpy
+  
+* System Requirements:
+  * python 3.5 or greater
+  * python3-tk
+  
 * Create a 'secrets.py' file in the root directory of yeebot with the following information:
 ```python
     BOT_TOKEN = '<bot_token here>'
