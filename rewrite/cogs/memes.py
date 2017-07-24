@@ -1,5 +1,6 @@
 import sqlite3
 import discord
+import secrets
 import re
 from discord.ext import commands
 from discord.utils import find
@@ -123,7 +124,7 @@ class Memes:
                                          'ps://<link.to.meme/meme>`')
 
     @commands.command(pass_context=True)
-    async def review(ctx, amount=1):
+    async def review(self, ctx, amount=1):
         sender = ctx.message.author
         if ctx.message.channel.id == secrets.REVIEW_CHANNEL_ID:
 
@@ -153,7 +154,7 @@ class Memes:
             pass
 
     @commands.command(pass_context=True)
-    async def approve(ctx, amount='1'):
+    async def approve(self, ctx, amount='1'):
         sender = ctx.message.author
         if ctx.message.channel.id == secrets.REVIEW_CHANNEL_ID:
 
@@ -174,7 +175,7 @@ class Memes:
                         for row in links_to_approve:
                             # grab the submitter for the link
                             submitter = find(lambda m: m.id == row[1],
-                                             tx.message.server.members)
+                                             ctx.message.server.members)
 
                             # update the row in the links table with approved
                             self.cur.execute("UPDATE links SET status = 'appro"
@@ -220,7 +221,7 @@ class Memes:
                                 self.cur.execute("INSERT INTO users (user_id, "
                                                  "username, meme_bucks) VALUES"
                                                  " (?, ?, ?);",
-                                                 (submitter.id, submitter_name,
+                                                 (submitter.id, ctx.submitter_name,
                                                   110)
                                                  )
                                 self.conn.commit()
@@ -271,7 +272,7 @@ class Memes:
                         self.cur.execute("UPDATE links SET status = 'approved'"
                                          " WHERE link = ?", (link_row[0],))
 
-                        cur.execute("SELECT meme_bucks FROM users WHERE user_i"
+                        self.cur.execute("SELECT meme_bucks FROM users WHERE user_i"
                                     "d = ?;", (link_row[1],))
                         meme_row = self.cur.fetchone()
 
@@ -296,8 +297,8 @@ class Memes:
                             self.cur.execute("INSERT INTO users (user_id, user"
                                              "name, meme_bucks) VALUES (?, ?, "
                                              "?);",
-                                             (submitter.id,
-                                              submitter_name,
+                                             (ctx.submitter.id,
+                                              ctx.submitter_name,
                                               110))
                             self.conn.commit()
                             await self.yeebot.send_message(link_submitter,
@@ -334,7 +335,7 @@ class Memes:
                     return await self.yeebot.say('Please use the format `!reje'
                                                  'ct <1-5|link>`')
 
-                elif int(amount) >= 1 and int(amount) <= 5:
+                elif 1 <= int(amount) <= 5:
                     self.cur.execute("SELECT link, submitter_id FROM links WHE"
                                      "RE status = 'review' LIMIT ?;",
                                      (amount,))

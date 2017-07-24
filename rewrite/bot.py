@@ -1,11 +1,8 @@
 import discord
 from discord.ext.commands import Bot
-from discord.utils import find
-import random
 import sqlite3
 import re
 import secrets
-import cogs
 
 image_link = re.compile('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|'
                         'streamable.com|redd.it)\/[^\ ]*'
@@ -18,7 +15,7 @@ conn = sqlite3.connect('db/yee.db')
 cur = conn.cursor()
 
 yeebot = Bot(command_prefix='!')
-startup_extensions = ['cogs.stats', 'cogs.raffle', 'cogs.misc', 'cogs.memes', 'cogs.memebucks']
+startup_extensions = ['cogs.stats', 'cogs.raffle', 'cogs.misc', 'cogs.memes', 'cogs.memebucks', 'cogs.keks']
 
 @yeebot.event
 async def on_ready():
@@ -34,7 +31,6 @@ async def on_ready():
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
             print('Failed to load extensions {}\n {}'.format(extension, exc))
-
 
 
 yeebot.run(secrets.BOT_TOKEN)

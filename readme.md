@@ -3,10 +3,22 @@
 
 Everything is slowly being moved into the rewrite. Once complete, that will become the root directory.
 
+### TODO:
 There is a [Trello](https://trello.com/b/70M7ljxB/yeebot) project tracking the progress of YeeBot.
 
-#### TODO:
-* Move all meme commands to their own cog
-* Complete the new raffle system
-* Add a status command to check on meme statuses
-
+### Getting Started:
+* Clone YeeBot
+* Create a 'secrets.py' file in the root directory of yeebot with the following information:
+```python
+    BOT_TOKEN = '<bot_token here>'
+    CLIENT_ID = '<discord client id here>'
+    CLIENT_SECRET = '<discord client secret here>'
+    
+    REDDIT_TOKEN = '<reddit token here>'
+    REDDIT_CLIENT_ID = '<reddit client id here>'
+    USER_AGENT = '<reddit user agent here>'
+    
+    REVIEW_CHANNEL_ID = '<channel id for the discord channel you want to dedicate meme reviews to>'
+```
+* ????
+* Profit

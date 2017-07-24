@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 import random
 import discord
+=======
+>>>>>>> a4ca48e6ddcc49b2dd901516850fa5105001b8e3
 from discord.ext import commands
 
 class Misc:
