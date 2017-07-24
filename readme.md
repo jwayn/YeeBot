@@ -8,12 +8,16 @@ There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the p
 
 ### Getting Started:
 * Clone YeeBot
-* Install a few modules via PIP:
+* PIP requirements:
 
   * discord.py
   * matplotlib
   * praw
   * numpy
+  
+* System Requirements:
+  * python 3.5 or greater
+  * python3-tk
   
 * Create a 'secrets.py' file in the root directory of yeebot with the following information:
 ```python
