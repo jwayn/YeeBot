@@ -16,8 +16,9 @@ class Misc:
                      '<https://github.com/jaspric/YeeBot/>')
         return await self.yeebot.say(yeestring)
     
-    @commands.command(hidden=True)
-    async def sputnik(self):
+    @commands.command(hidden=True, pass_context=True)
+    async def sputnik(self, ctx):
+        await self.yeebot.delete_message(ctx.message)
         return await self.yeebot.say('http://imgur.com/HPdBflu')
 
     

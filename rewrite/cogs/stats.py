@@ -1,4 +1,6 @@
 import sqlite3
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from discord.ext import commands
