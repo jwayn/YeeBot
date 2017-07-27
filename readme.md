@@ -17,7 +17,6 @@ There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the p
   
 * System Requirements:
   * python 3.5 or greater
-  * python3-tk
   
 * Create a 'secrets.py' file in the root directory of yeebot with the following information:
 ```python
