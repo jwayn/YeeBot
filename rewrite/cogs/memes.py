@@ -103,15 +103,19 @@ class Memes:
 
                     if review_count == 1:
                         await self.yeebot.send_message(self.yeebot.get_channel(
+                            secrets.REVIEW_CHANNEL_ID), args[0])
+                        return await self.yeebot.send_message(self.yeebot.get_channel(
                             secrets.REVIEW_CHANNEL_ID),
                             'There is 1 link awaiting review.'
                         )
+
                     else:
                         await self.yeebot.send_message(self.yeebot.get_channel(
+                            secrets.REVIEW_CHANNEL_ID), args[0])
+                        return await self.yeebot.send_message(self.yeebot.get_channel(
                             secrets.REVIEW_CHANNEL_ID),
                             'There are {} links awaiting review.'
-                            .format(review_count[0])
-                        )
+                            .format(review_count[0]))
             else:
                 return await self.yeebot.say('Please only submit links from Yo'
                                              'utube, GfyCat, Streamable, Twitc'
