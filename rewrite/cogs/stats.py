@@ -1,4 +1,5 @@
 import sqlite3
+import os
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -96,6 +97,9 @@ class Stats:
         plt.ylabel('# Memes Submitted')
         plt.xticks(N, names)
         
+        if os.path.isfile('cogs/output/stats.png')
+            os.remove('cogs/output/stats.png')
+
         plt.figlegend((approved_bar, rejected_bar),
                       ('Approved', 'Rejected'),
                       'upper right')
