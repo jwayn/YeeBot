@@ -23,6 +23,15 @@ async def on_ready():
     print(yeebot.user.name)
     print(yeebot.user.id)
     print('-----')
+    cur.execute('CREATE TABLE "links" (link text, status text, '
+                'submitter_id text, submitter_name text, reviewer_id'
+                ' text, reviewer_name text;)')
+
+    cur.execute('CREATE TABLE "users" (user_id TEXT UNIQUE, username '
+                'TEXT, meme_bucks INTEGER, memes_submitted INTEGER DEFAULT 0,'
+                ' memes_requested INTEGER DEFAULT 0, memes_approved INTEGER '
+                'DEFAULT 0, memes_rejected INTEGER DEFAULT 0, PRIMARY KEY(user_id))')
+
     await yeebot.change_presence(game=discord.Game(name="Memes"))
 
     for extension in startup_extensions:
