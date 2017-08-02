@@ -97,7 +97,7 @@ class Stats:
         plt.ylabel('# Memes Submitted')
         plt.xticks(N, names)
         
-        if os.path.isfile('cogs/output/stats.png')
+        if os.path.isfile('cogs/output/stats.png'):
             os.remove('cogs/output/stats.png')
 
         plt.figlegend((approved_bar, rejected_bar),

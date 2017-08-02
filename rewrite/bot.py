@@ -2,6 +2,8 @@ import discord
 from discord.ext.commands import Bot
 import sqlite3
 import re
+import os
+import errno
 import secrets
 
 image_link = re.compile('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|'
@@ -10,6 +12,12 @@ image_link = re.compile('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|'
 
 video_link = re.compile('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|youtu.be'
                         '|youtube.com|twitch.tv)\/[^\ ]*')
+
+try:
+    os.makedirs('db')
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise
 
 conn = sqlite3.connect('db/yee.db')
 cur = conn.cursor()
@@ -23,14 +31,15 @@ async def on_ready():
     print(yeebot.user.name)
     print(yeebot.user.id)
     print('-----')
-    cur.execute('CREATE TABLE "links" (link text, status text, '
-                'submitter_id text, submitter_name text, reviewer_id'
-                ' text, reviewer_name text;)')
 
-    cur.execute('CREATE TABLE "users" (user_id TEXT UNIQUE, username '
+    cur.execute('CREATE TABLE IF NOT EXISTS links(link text, status text, '
+                'submitter_id text, submitter_name text, reviewer_id'
+                ' text, reviewer_name text);')
+
+    cur.execute('CREATE TABLE IF NOT EXISTS users (user_id TEXT UNIQUE, username '
                 'TEXT, meme_bucks INTEGER, memes_submitted INTEGER DEFAULT 0,'
                 ' memes_requested INTEGER DEFAULT 0, memes_approved INTEGER '
-                'DEFAULT 0, memes_rejected INTEGER DEFAULT 0, PRIMARY KEY(user_id))')
+                'DEFAULT 0, memes_rejected INTEGER DEFAULT 0, PRIMARY KEY(user_id));')
 
     await yeebot.change_presence(game=discord.Game(name="Memes"))
 
