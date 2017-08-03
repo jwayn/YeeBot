@@ -1,4 +1,8 @@
-import sqlite3, re, random, praw, secrets
+import sqlite3
+import re
+import random
+import praw
+import secrets
 from discord.ext import commands
 
 
@@ -17,6 +21,9 @@ class Keks:
         self.yeebot = yeebot
         self.conn = sqlite3.connect('db/yee.db')
         self.cur = self.conn.cursor()
+        
+        self.cur.execute('CREATE TABLE IF NOT EXISTS subs (url TEXT, status TEXT)')
+
 
         self.image_link = re.compile(Keks.i_string)
         self.video_link = re.compile(Keks.v_string)

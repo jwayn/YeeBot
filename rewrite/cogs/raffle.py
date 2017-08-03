@@ -1,36 +1,38 @@
-import sqlite3
+from discord.ext import commands
+import discord
 
 
 class Raffle:
+    raffle_live = False
+    entries = []
+    
     def __init__(self, yeebot):
         self.yeebot = yeebot
-        self.conn = sqlite3.connect('db/yee.db')
-        self.cur = self.conn.cursor()
-        self.entries = []
-        self.raffle_live = False
-
     
-    @yeebot.group(pass_context=True,
+    @commands.group(pass_context=True,
                       description='Start a raffle.')
     async def raffle(self, ctx):
         if ctx.invoked_subcommand is None:
-            return await yeebot.say('What do you want to do with the raffle? `!help raffle` for more information.')
+            return await self.yeebot.say('What do you want to do with the raffle? `!help raffle` for more information.')
 
-    @raffle.command()
-    async def start(award_amount):
-        pass
+    @raffle.command(name='start', description='Start a raffle with `!raffle start <number>`')
+    async def start(self, award_amount=None):
+        if award_amount is None:
+            return await self.yeebot.say('Enter an award amount with `!raffle start <number>`')
+        else:
+            return await self.yeebot.say('Start a raffle')
 
-    @raffle.command()
-    async def end():
-        pass
+    @raffle.command(name='end')
+    async def end(self):
+        return await self.yeebot.say('End a raffle')
 
-    @raffle.command()
-    async def enter():
-        pass
+    @raffle.command(name='enter')
+    async def enter(self):
+        return await self.yeebot.say('Enter a raffle')
 
-    @raffle.command()
-    async def entries():
-        pass
+    @raffle.command(name='entries')
+    async def entries(self):
+        return await self.yeebot.say('Show all entries of the raffle')
 
 
 def setup(yeebot):
