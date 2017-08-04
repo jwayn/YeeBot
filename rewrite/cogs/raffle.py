@@ -18,8 +18,10 @@ class Raffle:
     @raffle.command(name='start', description='Start a raffle with `!raffle start <number>`')
     async def start(self, award_amount=None):
         if award_amount is None:
+            Raffle.raffle_live = True 
             return await self.yeebot.say('Enter an award amount with `!raffle start <number>`')
         else:
+            Raffle.raffle_live = True
             return await self.yeebot.say('Start a raffle')
 
     @raffle.command(name='end')
