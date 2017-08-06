@@ -4,10 +4,6 @@ import sqlite
 
 
 class Raffle:
-    raffle_live = False
-    entries = []
-    initiator_name = ''
-    initiator_id = 0
     
     def __init__(self, yeebot):
         self.yeebot = yeebot
@@ -16,13 +12,22 @@ class Raffle:
         
         self.cur.execute("CREATE TABLE IF NOT EXISTS raffles (raffle_id INTEGER PRIMARY KEY, initiator_name TEXT,"
                          " initiator_id TEXT, time_started TEXT DEFAULT datetime('now'), winner_name TEXT, "
-                         "winner_id TEXT, winnings_amount)")
+                         "winner_id TEXT, winnings_amount INTEGER, is_live INTEGER)")
         
         self.cur.execute('CREATE TABLE IF NOT EXISTS raffle_entries (raffle_id INTEGER REFERENCES raffles(raffle_id),'
                          ' user_id TEXT, user_name TEXT, is_winner INTEGER DEFAULT 0, UNIQUE (raffle_id, user_id))')
+       
+        self.cur.execute('SELECT raffle_id FROM raffles WHERE is_live = 1')
         
-    @commands.group(pass_context=True,
-                      description='Start a raffle.')
+        fetch = self.cur.fetchone()
+
+        if fetch:
+            self.is_live = 1
+            self.live_raffle_id = fetch[0]
+        else
+            self.is_live = 0
+
+    @commands.group(pass_context=True, description='Start a raffle.')
     async def raffle(self, ctx):
         if Raffle.raffle_live:
             return await self.yeebot.say(f'There if a live raffle started by {initiator} at {start_time}. There are currently {num_entries} raffle entries.')
