@@ -37,11 +37,11 @@ class Raffle:
         if ctx.invoked_subcommand is None:
             return await self.yeebot.say('What do you want to do with the raffle? `!help raffle` for more information.')
 
-    @raffle.command(name='start', description='Start a raffle with `!raffle start <number>`')
+    @raffle.command(name='start', description='Start a raffle with `!raffle start <award_amount>`')
     async def start(self, award_amount=None):
         if award_amount is None:
             self.is_live = True 
-            return await self.yeebot.say('Enter an award amount with `!raffle start <number>`')
+            return await self.yeebot.say('Enter an award amount with `!raffle start <award_amount>`')
         else:
             self.is_live = True
             return await self.yeebot.say('Start a raffle')
