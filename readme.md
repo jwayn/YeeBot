@@ -31,6 +31,7 @@ There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the p
     USER_AGENT = '<reddit user agent here>'
     
     REVIEW_CHANNEL_ID = '<channel id for the discord channel you want to dedicate meme reviews to>'
+    ADMIN_ROLES = ['admin role 1', 'admin role 2', 'admin role 3']
 ```
 * ????
 * Profit
