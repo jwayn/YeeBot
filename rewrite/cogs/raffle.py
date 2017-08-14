@@ -1,12 +1,14 @@
 from discord.ext import commands
 import discord
 import sqlite3
+import secrets
 
 
 def is_admin(ctx):
     roles = ctx.message.author.roles
-    if 'VERY Bad Hombres' in roles or 'Bad Hombres' in roles:
-        return True
+    for role in secrets.ADMIN_ROLES:
+        if role in roles:
+            return True
     return False
 
 
@@ -38,14 +40,23 @@ class Raffle:
         else:
             self.is_live = 0
 
-    @commands.group(pass_context=True, description='Start a raffle.')
+    @commands.group(pass_context=True)
     async def raffle(self, ctx):
         if ctx.invoked_subcommand is None:
             return await self.yeebot.say('What do you want to do with the raffle? `!help raffle` for more information.')
 
+    @commands.check(is_admin) 
     @raffle.command(name='start', description='Start a raffle with `!raffle start <award_amount>`')
     async def start(self, ctx, award_amount=None):
-        if ctx.
+        if award_amount:
+            self.cur.execute('INSERT INTO raffles (is_live, initiator_id, initiator_name, winnings_amount) VALUES'
+                             ' (1, ?, ?, ?)', ctx.message.author.id, ctx.message.author.name, award_amount)
+            self.is_live = True
+        else: 
+            self.cur.execute('INSERT INTO raffles (is_live, initiator_id, initiator_name, winnings_amount) VALUES'
+                             ' (1, ?, ?, 0)', ctx.message.author.id, ctx.message.author.name)
+            self.is_live = True
+
     @raffle.command(name='end')
     async def end(self):
         return await self.yeebot.say('End a raffle')
