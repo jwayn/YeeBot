@@ -51,3 +51,4 @@ stats.png
 __pycache__
 db
 */db
+secrets.py
