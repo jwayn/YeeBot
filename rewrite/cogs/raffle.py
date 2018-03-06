@@ -46,29 +46,45 @@ class Raffle:
             return await self.yeebot.say('What do you want to do with the raffle? `!help raffle` for more information.')
 
     @commands.check(is_admin) 
-    @raffle.command(name='start', description='Start a raffle with `!raffle start <award_amount>`')
+    @raffle.command(name='start', description='Start a raffle with `!raffle start <optional_award_amount>`')
     async def start(self, ctx, award_amount=None):
         if award_amount:
             self.cur.execute('INSERT INTO raffles (is_live, initiator_id, initiator_name, winnings_amount) VALUES'
                              ' (1, ?, ?, ?)', ctx.message.author.id, ctx.message.author.name, award_amount)
-            self.is_live = True
+            self.is_live = 1
         else: 
             self.cur.execute('INSERT INTO raffles (is_live, initiator_id, initiator_name, winnings_amount) VALUES'
                              ' (1, ?, ?, 0)', ctx.message.author.id, ctx.message.author.name)
-            self.is_live = True
+            self.is_live = 1
 
+    @commands.check(is_admin)
     @raffle.command(name='end')
-    async def end(self):
-        return await self.yeebot.say('End a raffle')
+    async def end(self, ctx):
+        #check if raffle already live
+        #if raffle is live
+        #   check if raffle has award amount
+        #   if raffle has award amount
+        #       pick raffle winner
+        #       award winner with award amount
+        #       end raffle
+        #   else
+        #       pick raffle winner
+        #       end raffle
+        #else
+        #   return message stating to start raffle
 
     @raffle.command(name='enter')
-    async def enter(self):
-        return await self.yeebot.say('Enter a raffle')
+    async def enter(self, ctx):
+       #check if user is already in raffle
+       #if user is in raffle
+       #    return message that says user is in raffle already
+       #else
+       #    enter user into raffle
 
+    @commands.check(is_admin)
     @raffle.command(name='entries')
-    async def entries(self):
-        return await self.yeebot.say('Show all entries of the raffle')
-
+    async def entries(self, ctx):
+        #return list of users in raffle
 
 def setup(yeebot):
     yeebot.add_cog(Raffle(yeebot))
