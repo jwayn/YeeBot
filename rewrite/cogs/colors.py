@@ -1,4 +1,5 @@
 from discord.ext import commands
+from memebucks import memebucks
 import discord
 import sqlite3
 import secrets
@@ -26,9 +27,16 @@ class Colors:
 
     @raffle.command(name='teal')
     async def teal(self, ctx):
-        #change user color to green
-        #subtract 100 memebcuks from account
-        #return message stating this
+        #select memebucks from user
+        if memebucks.check_balance(ctx.message.author.id) >= 100:
+            if 'teal' in ctx.message.author.roles:
+                self.yeebot.say('You are already that color, silly.')
+            else:
+                self.yeebot.replace_role(ctx.message.author, 'teal')
+                memebucks.withdraw(ctx.message.author.id, 100)
+                self.yeebot.say('Your new color is teal. Your new balance is {}'.format(memebucks.check_balance(ctx.message.author.id)))
+        else:
+            self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
 
     
     @raffle.command(name='green')

@@ -31,6 +31,31 @@ class Memebucks:
                                          '*100** {}'
                                          .format(memebuck, memebuck))
 
+    def check_if_exists(user_id):
+        self.cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?;", (user_id,))
+        row = self.cur.fetchone()
+        if row:
+            return True
+        else:
+            return False
+
+    def check_balance(user_id):
+        if check_if_exists(user_id):
+            return row[0]
+        else:
+            return 0
+
+    def withdraw_memebucks(user_id, amount):
+        if check_if_exists(user_id):
+            if amount > check_balance(user_id):
+                pass
+            else:
+                self.cur.execute()
+
+    def deposit_memebucks(user_id, amount):
+        if check_if_exists(user_id):
+            self.cur.execute()
+
 
 def setup(yeebot):
     yeebot.add_cog(Memebucks(yeebot))
