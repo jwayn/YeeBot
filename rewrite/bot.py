@@ -23,7 +23,7 @@ conn = sqlite3.connect('db/yee.db')
 cur = conn.cursor()
 
 yeebot = Bot(command_prefix='!')
-startup_extensions = ['cogs.stats', 'cogs.raffle', 'cogs.misc', 'cogs.memes', 'cogs.memebucks', 'cogs.keks']
+startup_extensions = ['cogs.stats', 'cogs.raffle', 'cogs.colors', 'cogs.misc', 'cogs.memes', 'cogs.memebucks', 'cogs.keks']
 
 @yeebot.event
 async def on_ready():
