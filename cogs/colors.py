@@ -19,25 +19,43 @@ class Colors:
         self.yeebot = yeebot
         self.conn = sqlite3.connect('db/yee.db')
         self.cur = self.conn.cursor()
-        
+        self.role_colors = ['teal', 'green', 'blue', 'pink', 'purple', 'red',
+                       'yellow', 'orange'] 
+    
+    async def remove_colors(self, ctx):    
+        roles = [role for role in ctx.message.author.roles if role.name in
+                 self.role_colors]
+        if roles:
+            await self.yeebot.say('All colors removed, free of charge!')
+            return await self.yeebot.remove_roles(ctx.message.author, *roles)
+
+    async def add_color(self, ctx, color):
+        roles = [role for role in ctx.message.author.roles if role.name in
+                self.role_colors]
+        if roles:
+            await self.yeebot.say('You already have a color! I went ahead and removed it so you can add another one.')
+            return await self.yeebot.remove_roles(ctx.message.author, *roles)
+        else:
+            color_role = discord.utils.get(ctx.message.server.roles, name=color) 
+            Memebucks.deposit(self, ctx.message.author.id, 100)
+            await self.yeebot.add_roles(ctx.message.author, color_role) 
+            return await self.yeebot.say('Your new color is {}. Your new balance is {}'.format(color, Memebucks.check_balance(self, ctx.message.author.id)))
+
+
     @commands.group(pass_context=True)
     async def color(self, ctx):
         if ctx.invoked_subcommand is None:
             return await self.yeebot.say('What color do you want to change to? !help colors for more information.')
 
+    @color.command(name='remove', description="Remove your color.", pass_context=True)
+    async def remove(self, ctx):
+        return await self.remove_colors(ctx)
 
     @color.command(name='teal', description="Change name color to teal.", pass_context=True)
     async def teal(self, ctx):
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
-            print('enough memebucks')
-            if ' teal' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='teal')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is teal. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            return await self.add_color(ctx, 'teal')
         else:
             print('Not enough memebucks')
             return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
@@ -48,13 +66,7 @@ class Colors:
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
             print('enough memebucks')
-            if ' green' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='green')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is green. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            await self.add_color(ctx, 'green')
         else:
             print('Not enough memebucks')
             return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
@@ -65,13 +77,7 @@ class Colors:
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
             print('enough memebucks')
-            if ' blue' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='blue')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is blue. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            await self.add_color(ctx, 'blue')
         else:
             print('Not enough memebucks')
             return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
@@ -81,14 +87,7 @@ class Colors:
     async def purple(self, ctx):
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
-            print('enough memebucks')
-            if ' purple' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='purple')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is purple. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            await self.add_color(ctx, 'purple')
         else:
             print('Not enough memebucks')
             return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
@@ -99,13 +98,7 @@ class Colors:
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
             print('enough memebucks')
-            if ' red' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='red')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is red. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            await self.add_color(ctx, 'red')
         else:
             print('Not enough memebucks')
             return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
@@ -116,13 +109,7 @@ class Colors:
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
             print('enough memebucks')
-            if ' yellow' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='yellow')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is yellow. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            await self.add_color(ctx, 'yellow') 
         else:
             print('Not enough memebucks')
             return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
@@ -133,33 +120,19 @@ class Colors:
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
             print('enough memebucks')
-            if ' orange' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='orange')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is orange. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            await self.add_color(ctx, 'orange') 
         else:
             print('Not enough memebucks')
             return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
 
-
-    @color.command(name='grey', description="Change name color to grey.", pass_context=True)
-    async def grey(self, ctx):
+    @color.command(name='pink', description="Change name color to pink.", pass_context=True)
+    async def pink(self, ctx):
         #select memebucks from user
         if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
             print('enough memebucks')
-            if ' grey' in ctx.message.author.roles:
-                return await self.yeebot.say('You are already that color, silly.')
-            else:
-                role = discord.utils.get(ctx.message.server.roles, name='grey')
-                await self.yeebot.replace_roles(ctx.message.author, role)
-               #Memebucks.withdraw(self, ctx.message.author.id, 100)
-                return await self.yeebot.say('Your new color is grey. Your new balance is {}'.format(Memebucks.check_balance(self, ctx.message.author.id)))
+            await self.add_color(ctx, 'pink') 
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
-
+    
 def setup(yeebot):
     yeebot.add_cog(Colors(yeebot))
