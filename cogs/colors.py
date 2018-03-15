@@ -37,7 +37,7 @@ class Colors:
             return await self.yeebot.remove_roles(ctx.message.author, *roles)
         else:
             color_role = discord.utils.get(ctx.message.server.roles, name=color) 
-            Memebucks.deposit(self, ctx.message.author.id, 100)
+            Memebucks.withdraw(self, ctx.message.author.id, 100)
             await self.yeebot.add_roles(ctx.message.author, color_role) 
             return await self.yeebot.say('Your new color is {}. Your new balance is {}'.format(color, Memebucks.check_balance(self, ctx.message.author.id)))
 
