@@ -37,7 +37,7 @@ class Colors:
             return await self.yeebot.remove_roles(ctx.message.author, *roles)
         else:
             color_role = discord.utils.get(ctx.message.server.roles, name=color) 
-            Memebucks.withdraw(self, ctx.message.author.id, 100)
+            Memebucks.withdraw(self, ctx.message.author.id, 50)
             await self.yeebot.add_roles(ctx.message.author, color_role) 
             return await self.yeebot.say('Your new color is {}. Your new balance is {}'.format(color, Memebucks.check_balance(self, ctx.message.author.id)))
 
@@ -54,81 +54,81 @@ class Colors:
     @color.command(name='teal', description="Change name color to teal.", pass_context=True)
     async def teal(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             return await self.add_color(ctx, 'teal')
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
+            return await self.yeebot.say('You need at least 50 memebucks to change the color of your name. Get out there and submit some memes!')
 
 
     @color.command(name='green', description="Change name color to green.", pass_context=True)
     async def green(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'green')
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
+            return await self.yeebot.say('You need at least 50 memebucks to change the color of your name. Get out there and submit some memes!')
 
 
     @color.command(name='blue', description="Change name color to blue.", pass_context=True)
     async def blue(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'blue')
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
+            return await self.yeebot.say('You need at least 50 memebucks to change the color of your name. Get out there and submit some memes!')
 
 
     @color.command(name='purple', description="Change name color to purple.", pass_context=True)
     async def purple(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             await self.add_color(ctx, 'purple')
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
+            return await self.yeebot.say('You need at least 50 memebucks to change the color of your name. Get out there and submit some memes!')
 
 
     @color.command(name='red', description="Change name color to red.", pass_context=True)
     async def red(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'red')
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
+            return await self.yeebot.say('You need at least 50 memebucks to change the color of your name. Get out there and submit some memes!')
 
 
     @color.command(name='yellow', description="Change name color to yellow.", pass_context=True)
     async def yellow(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'yellow') 
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
+            return await self.yeebot.say('You need at least 50 memebucks to change the color of your name. Get out there and submit some memes!')
 
 
     @color.command(name='orange', description="Change name color to orange.", pass_context=True)
     async def orange(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'orange') 
         else:
             print('Not enough memebucks')
-            return await self.yeebot.say('You need at least 100 memebucks to change the color of your name. Get out there and submit some memes!')
+            return await self.yeebot.say('You need at least 50 memebucks to change the color of your name. Get out there and submit some memes!')
 
     @color.command(name='pink', description="Change name color to pink.", pass_context=True)
     async def pink(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 100:
+        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'pink') 
         else:
