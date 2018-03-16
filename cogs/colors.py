@@ -45,7 +45,7 @@ class Colors:
     @commands.group(pass_context=True)
     async def color(self, ctx):
         if ctx.invoked_subcommand is None:
-            return await self.yeebot.say('What color do you want to change to? !help colors for more information.')
+            return await self.yeebot.say('What color do you want to change to? !help color for more information.')
 
     @color.command(name='remove', description="Remove your color.", pass_context=True)
     async def remove(self, ctx):
