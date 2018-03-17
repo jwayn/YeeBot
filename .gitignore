@@ -51,5 +51,6 @@ stats.png
 __pycache__
 db
 */db
+*.db
 secrets.py
 Pipfile*
