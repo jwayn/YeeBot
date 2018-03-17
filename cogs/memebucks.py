@@ -9,8 +9,8 @@ class Memebucks:
         self.yeebot = yeebot
         self.conn = sqlite3.connect('db/yee.db')
         self.cur = self.conn.cursor()
-
-    @commands.command(pass_context=True)
+    
+    @commands.group(pass_context=True)
     async def memebucks(self, ctx):
 
         sender = ctx.message.author
@@ -30,6 +30,14 @@ class Memebucks:
                                          'rica! Your account balance is\n{} *'
                                          '*100** {}'
                                          .format(memebuck, memebuck))
+
+    @memebucks.command(pass_context=True)
+    async def balance(self, ctx):
+        pass
+
+    @memebucks.command(pass_context=True)
+    async def give(self, ctx, user, amount):
+        pass
 
 
 def setup(yeebot):

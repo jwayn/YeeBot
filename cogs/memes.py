@@ -22,7 +22,7 @@ class Memes:
         self.video_link = re.compile(v_string)
 
     @commands.command(pass_context=True,
-                      description='Return a random meme')
+                      description='Return a random meme. Cost: 1 memebuck.')
     async def meme(self, ctx):
         sender = ctx.message.author
 
