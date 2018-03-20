@@ -11,6 +11,8 @@ v_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|streamable.com'
             '|youtu.be|youtube.com|twitch.tv)\/[^\ ]*')
 memebuck = '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲'
 
+def account_exists(ctx):
+    return Bank.check_if_exists(ctx.message.author.id)
 
 class Memes:
     def __init__(self, yeebot):
@@ -21,8 +23,7 @@ class Memes:
         self.image_link = re.compile(i_string)
         self.video_link = re.compile(v_string)
 
-    @commands.command(pass_context=True,
-                      description='Return a random meme. Cost: 1 memebuck.')
+    @commands.command(pass_context=True, description='Return a random meme. Cost: 1 memebuck.')
     async def meme(self, ctx):
         sender = ctx.message.author
 

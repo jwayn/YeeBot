@@ -1,5 +1,5 @@
 from discord.ext import commands
-from memebucks import Memebucks
+from bank import Bank
 import discord
 import sqlite3
 import secrets
@@ -37,9 +37,9 @@ class Colors:
             return await self.yeebot.remove_roles(ctx.message.author, *roles)
         else:
             color_role = discord.utils.get(ctx.message.server.roles, name=color) 
-            Memebucks.withdraw(self, ctx.message.author.id, 50)
+            Bank.withdraw(self, ctx.message.author.id, 50)
             await self.yeebot.add_roles(ctx.message.author, color_role) 
-            return await self.yeebot.say('Your new color is {}. Your new balance is {}'.format(color, Memebucks.check_balance(self, ctx.message.author.id)))
+            return await self.yeebot.say('Your new color is {}. Your new balance is {}'.format(color, Bank.check_balance(self, ctx.message.author.id)))
 
 
     @commands.group(pass_context=True)
@@ -54,7 +54,7 @@ class Colors:
     @color.command(name='teal', description="Change name color to teal.", pass_context=True)
     async def teal(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             return await self.add_color(ctx, 'teal')
         else:
             print('Not enough memebucks')
@@ -64,7 +64,7 @@ class Colors:
     @color.command(name='green', description="Change name color to green.", pass_context=True)
     async def green(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'green')
         else:
@@ -75,7 +75,7 @@ class Colors:
     @color.command(name='blue', description="Change name color to blue.", pass_context=True)
     async def blue(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'blue')
         else:
@@ -86,7 +86,7 @@ class Colors:
     @color.command(name='purple', description="Change name color to purple.", pass_context=True)
     async def purple(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             await self.add_color(ctx, 'purple')
         else:
             print('Not enough memebucks')
@@ -96,7 +96,7 @@ class Colors:
     @color.command(name='red', description="Change name color to red.", pass_context=True)
     async def red(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'red')
         else:
@@ -107,7 +107,7 @@ class Colors:
     @color.command(name='yellow', description="Change name color to yellow.", pass_context=True)
     async def yellow(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'yellow') 
         else:
@@ -118,7 +118,7 @@ class Colors:
     @color.command(name='orange', description="Change name color to orange.", pass_context=True)
     async def orange(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'orange') 
         else:
@@ -128,7 +128,7 @@ class Colors:
     @color.command(name='pink', description="Change name color to pink.", pass_context=True)
     async def pink(self, ctx):
         #select memebucks from user
-        if Memebucks.check_balance(self, ctx.message.author.id) >= 50:
+        if Bank.check_balance(self, ctx.message.author.id) >= 50:
             print('enough memebucks')
             await self.add_color(ctx, 'pink') 
         else:
