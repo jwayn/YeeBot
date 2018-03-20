@@ -1,6 +1,6 @@
 import sqlite3
 
-class Memebucks:
+class Bank:
     def __init__(self, yeebot):
         self.yeebot = yeebot
         self.conn = sqlite3.connect('db/yee.db')
@@ -13,19 +13,25 @@ class Memebucks:
             return True
         else:
             return False
- 
+
     def check_balance(self, user_id):
-        self.cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?", (user_id,))    
+        self.cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?", (user_id,))
         row = self.cur.fetchone()
         print('Balance checked.')
         return row[0]
- 
+
 
     def withdraw(self, user_id, amount):
         self.cur.execute("UPDATE users set meme_bucks = meme_bucks - ? WHERE user_id = ?", (amount, user_id))
         self.conn.commit()
-            
+
 
     def deposit(self, user_id, amount):
         self.cur.execute("UPDATE users set meme_bucks = meme_bucks + ? WHERE user_id = ?", (amount, user_id))
+        self.conn.commit()
+
+
+    def transfer(self, from_user, to_user, amount):
+        self.withdraw(from_user, amount)
+        self.deposit(to_user,  amount)
         self.conn.commit()
