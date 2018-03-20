@@ -1,8 +1,12 @@
 import sqlite3
 from discord.ext import commands
+from bank import Bank
 
 memebuck = '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]'
 
+
+def account_exists(ctx):
+    return Bank.check_if_exists(ctx.message.author.id)
 
 class Memebucks:
     def __init__(self, yeebot):
@@ -12,17 +16,9 @@ class Memebucks:
     
     @commands.group(pass_context=True)
     async def memebucks(self, ctx):
-
-        sender = ctx.message.author
-        self.cur.execute("SELECT meme_bucks FROM users WHERE user_id = ?;",
-                         (sender.id,))
-        row = self.cur.fetchone()
-        if row:
-            return await self.yeebot.say('{}, your balance is {} memebucks.'
-                                         .format(sender.name, row[0]))
-        else:
-            self.cur.execute("INSERT INTO users (user_id, username, meme_buck"
-                             "s) VALUES (?,?,?);",
+        
+        if not Bank.check_if_exists(ctx.message.author.id):
+            self.cur.execute("INSERT INTO users (user_id, username, meme_bucks) VALUES (?,?,?);",
                              (sender.id, sender.name, 100))
             self.conn.commit()
             return await self.yeebot.say('Congratulations! You have establish'
@@ -30,14 +26,22 @@ class Memebucks:
                                          'rica! Your account balance is\n{} *'
                                          '*100** {}'
                                          .format(memebuck, memebuck))
-
+        else:
+            self.yeebot.say('What would you like to do with memebucks? !help memebucks for more.')
+    
+    @commands.check(account_exists)
     @memebucks.command(pass_context=True)
     async def balance(self, ctx):
-        pass
-
+        balance = Bank.check_balance()
+        self.yeebot.say('{}, your balance is {}.'.format(ctx.message.author.name, balance))
+    
+    @commands.check(account_exists)
     @memebucks.command(pass_context=True)
     async def give(self, ctx, user, amount):
-        pass
+        balance = Bank.check_balance()
+        if balance >= amount:
+            Bank.transfer(ctx.message.author.id, user.id, amount)
+            self.yeebot.say('{} memebucks given to {}.'.format(amount, user.name))
 
 
 def setup(yeebot):
