@@ -6,6 +6,7 @@ YeeBot is centralized, and uses a specific channel for reviewing memes that are 
 ## TODO:
 There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the progress of YeeBot.
 * Rework the way images are submitted and voted upon to make it a community effort rather than a dictorial process
+* Complete raffle system
 * Actually comment the code
 * Add docker section in 'Getting Started'
 
