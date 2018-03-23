@@ -13,10 +13,12 @@ There is a [Trello Project](https://trello.com/b/70M7ljxB/yeebot) tracking the p
 
 
 ## Getting Started:
- $> git clone https://github.com/jaspric/YeeBot.git
- $> pip install -R requirements
- $> vim secrets.py (copy the blurb from below, and fill out your credentials)
- $> python bot.py
+```bash
+$ git clone https://github.com/jaspric/YeeBot.git
+$ pip install -R requirements
+$ vim secrets.py (copy the blurb from below, and fill out your credentials)
+$ python bot.py
+```
   
 * System Requirements:
   * python 3.5 or greater
