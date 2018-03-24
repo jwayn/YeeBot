@@ -36,3 +36,20 @@ class Bank:
         self.deposit(to_user, amount)
         print('Memebucks transferred.')
         self.conn.commit()
+
+
+class Meme:
+    def __init__(self):
+        self.conn = sqlite3.connect('db/yee.db')
+        self.cur = self.conn.cursor()
+
+    def add(self, user, link):
+        self.cur.execute("INSERT INTO links ")
+
+    def retrieve(self, user):
+        self.cur.execute("UPDATE users SET meme_bucks = meme_bucks - 1, memes_requested = memes_requested + 1 WHERE user_id = ?;", (user.id,))
+        self.conn.commit()
+        self.cur.execute("SELECT link, submitter_name FROM links WHERE status = 'approved' ORDER BY RANDOM() LIMIT 1;")
+        row = self.cur.fetchone()
+        return [row[0], row[1]]
+

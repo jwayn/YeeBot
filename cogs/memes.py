@@ -4,6 +4,11 @@ import re
 from discord.ext import commands
 from discord.utils import find
 import secrets
+from bank import Bank
+from bank import Meme
+
+bank = Bank()
+memedb = Meme()
 
 i_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|redd.i'
             't)\/[^\ ]*(?:.gif|.gifv|.png|.jpg|.jpeg|.mp4|.apng|.tiff)$')
@@ -12,7 +17,7 @@ v_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|streamable.com'
 memebuck = '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲'
 
 def account_exists(ctx):
-    return Bank.check_if_exists(ctx.message.author.id)
+    return bank.check_if_exists(ctx.message.author.id)
 
 class Memes:
     def __init__(self, yeebot):
@@ -23,51 +28,24 @@ class Memes:
         self.image_link = re.compile(i_string)
         self.video_link = re.compile(v_string)
 
-    @commands.command(pass_context=True, description='Return a random meme. Cost: 1 memebuck.')
+
+    @commands.check(account_exists)
+    @commands.group(pass_context=True, description='Return a random meme. Cost: 1 memebuck.')
     async def meme(self, ctx):
-        sender = ctx.message.author
-
-        meme_bucks_row = self.cur.execute("SELECT meme_bucks FROM users WHERE "
-                                          "user_id = ?;", (sender.id,))
-        meme_bucks = self.cur.fetchone()
-
-        if meme_bucks:
-            if meme_bucks[0] > 0:
-                self.cur.execute("UPDATE users SET meme_bucks = meme_bucks - 1"
-                                 " WHERE user_id = ?;", (sender.id,))
-                self.cur.execute("UPDATE users SET memes_requested = memes_req"
-                                 "uested+ 1 WHERE user_id = ?;", (sender.id,))
-                self.conn.commit()
-                self.cur.execute("SELECT link, submitter_name FROM links WHERE"
-                                 " status ='approved' ORDER BY RANDOM() LIMIT "
-                                 "1;")
-
-                row = self.cur.fetchone()
-                link = row[0]
-                submitter = row[1]
-
-                return await self.yeebot.say(link + "\n Please enjoy this deli"
-                                             "cious meme brought to you by `{}"
-                                             "`. Thank you for your patronage."
-                                             .format(submitter))
+        if ctx.invoked_subcommand is None:
+            if bank.check_balance(ctx.message.author.id) > 1:
+                bank.withdraw(ctx.message.author.id, 1)
+                returned_meme = memedb.retrieve(ctx.message.author)
+                return await self.yeebot.say('{} Please enjoy this delicious meme brought to you by {}'.format(returned_meme[0], returned_meme[1]))
             else:
-                return await self.yeebot.say("Sorry, you don't have enough mem"
-                                             "ebucks to complete this transact"
-                                             "ion. Submit some memes with `!ad"
-                                             "dmeme <https://link.to.meme/meme"
-                                             ">` to get some more!")
-        else:
-            return await self.yeebot.say('Sorry, you need a bank of mememerica'
-                                         ' account to complete this transactio'
-                                         'n. Use `!memebucks` to establish an '
-                                         'account.')
+                return await self.yeebot.say("You don't have enough memebucks to do that.")
 
-    @commands.command(pass_context=True)
-    async def addmeme(self, ctx, *args):
 
-        sender = ctx.message.author
+    @commands.check(account_exists)
+    @meme.command(pass_context=True, description="Submit a meme to be reviewed and potentially added to the database.")
+    async def add(self, ctx, link):
 
-        if args:
+        if link:
             v_link = self.video_link.match(args[0])
             i_link = self.image_link.match(args[0])
 
