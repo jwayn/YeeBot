@@ -43,13 +43,37 @@ class Meme:
         self.conn = sqlite3.connect('db/yee.db')
         self.cur = self.conn.cursor()
 
-    def add(self, user, link):
-        self.cur.execute("INSERT INTO links ")
 
-    def retrieve(self, user):
-        self.cur.execute("UPDATE users SET meme_bucks = meme_bucks - 1, memes_requested = memes_requested + 1 WHERE user_id = ?;", (user.id,))
+    def add(self, user, link):
+        self.cur.execute("INSERT INTO links (link, status, submitter_id, submitter_name) VALUES (?, 'REVIEW', ?, ?)", (link, user.id, user.name))
         self.conn.commit()
-        self.cur.execute("SELECT link, submitter_name FROM links WHERE status = 'approved' ORDER BY RANDOM() LIMIT 1;")
-        row = self.cur.fetchone()
-        return [row[0], row[1]]
+
+
+    def approve(self, link):
+        self.cur.execute("UPDATE links SET status = 'APPROVED' WHERE link = ?;", (link,))
+        self.conn.commit()
+
+
+    def reject(self, link):
+        self.cur.execute("UPDATE links SET status = 'REJECTED' WHERE link = ?;", (link,))
+        self.conn.commit()
+
+
+    def retrieve(self, user=None, link=None):
+
+        if link:
+            self.cur.execute("SELECT link FROM links WHERE link = ?;", (link,))
+            row = self.cur.fetchone()
+
+            if row:
+                return True
+            else:
+                return False
+
+        else:
+            self.cur.execute("UPDATE users SET meme_bucks = meme_bucks - 1, memes_requested = memes_requested + 1 WHERE user_id = ?;", (user.id,))
+            self.conn.commit()
+            self.cur.execute("SELECT link, submitter_name FROM links WHERE status = 'APPROVED' ORDER BY RANDOM() LIMIT 1;")
+            row = self.cur.fetchone()
+            return [row[0], row[1]]
 
