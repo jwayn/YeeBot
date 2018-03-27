@@ -35,7 +35,7 @@ async def on_ready():
     cur.execute('CREATE TABLE IF NOT EXISTS links(link text, status text, '
                 'submitter_id text, submitter_name text);')
 
-    cur.execute('CREATE TABLE IF NOT EXISTS votes(link text, status text, voter_id text, vote text;)')
+    cur.execute('CREATE TABLE IF NOT EXISTS votes(link text, voter_id text, vote text);')
 
     cur.execute('CREATE TABLE IF NOT EXISTS users (user_id TEXT UNIQUE, username '
                 'TEXT, meme_bucks INTEGER, memes_submitted INTEGER DEFAULT 0,'

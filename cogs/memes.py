@@ -70,15 +70,57 @@ class Memes:
                         reaction = await self.yeebot.wait_for_reaction(message=msg, emoji=[THUMBS_UP, THUMBS_DOWN])
                         print('Reaction added for {}'.format(link))
                         if reaction.reaction.emoji == THUMBS_UP:
-                            #check for users reactions already here
-                            pos_vote += 1
-                            vote_count += 1
-                            self.yeebot.say(pos_vote)
+                            
+                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ?;", (reaction.user.id,))
+                            row = self.cur.fetchone()
+                            if row:
+                                user_vote = row[0]
+                            
+                                if user_vote:
+                                    if user_vote == 'NEG':
+                                        print('User already has an active vote. Removing emoji and updating row.')
+                                        await self.yeebot.remove_reaction(msg, THUMBS_DOWN, reaction.user)
+                                        self.cur.execute("UPDATE votes SET vote = 'pos' WHERE voter_id = ?;", (reaction.user.id,))
+                                        self.conn.commit()
+                                        pos_vote += 1
+                                        neg_vote -= 1
+                                        print('Positive vote: {}'.format(pos_vote))
+                                        print('Negative vote: {}'.format(neg_vote))
+                                    else:
+                                        print('User already made a positive vote. Do nothing.')
+                            else:
+                                pos_vote += 1
+                                vote_count += 1
+                                self.cur.execute("INSERT INTO votes (link, voter_id, vote) VALUES(?, ?, 'POS');", (link, reaction.user.id))
+                                self.conn.commit()
+                                print('Positive vote: {}'.format(pos_vote))
+                                print('Negative vote: {}'.format(neg_vote))
+
                         elif reaction.reaction.emoji == THUMBS_DOWN:
-                            neg_vote += 1
-                            vote_count += 1
-                            self.yeebot.say(neg_vote)
-                        remove_reac = await self.yeebot.on_reaction_remove(
+                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ?;", (reaction.user.id,))
+                            row = self.cur.fetchone()
+                            if row:
+                                user_vote = row[0]
+                                if user_vote:
+                                    if user_vote == 'POS':
+                                        print('User has an active vote. Removing emoji and updating row')
+                                        await self.yeebot.remove_reaction(msg, THUMBS_UP, reaction.user)
+                                        self.cur.execute("UPDATE votes SET vote = 'neg' WHERE voter_id = ?;", (reaction.user.id,))
+                                        self.conn.commit()
+                                        pos_vote -= 1
+                                        neg_vote += 1
+                                        print('Positive vote: {}'.format(pos_vote))
+                                        print('Negative vote: {}'.format(neg_vote))
+                                    else:
+                                        print('User already made a negative vote. Do nothing.')
+                            else:
+                                neg_vote += 1
+                                vote_count += 1
+                                self.cur.execute("INSERT INTO votes (link, voter_id, vote) VALUES(?, ?, 'NEG');", (link, reaction.user.id))
+                                self.conn.commit()
+                                print('Positive vote: {}'.format(pos_vote))
+                                print('Negative vote: {}'.format(neg_vote))
+
                     print('{} vote over'.format(link))
                     if pos_vote > neg_vote:
                         memedb.approve(link)
@@ -86,5 +128,8 @@ class Memes:
                     elif neg_vote > pos_vote:
                         memedb.reject(link)
                         print('{} rejected.'.format(link))
+            else:
+                print('Bad link.') 
+
 def setup(yeebot):
     yeebot.add_cog(Memes(yeebot))
