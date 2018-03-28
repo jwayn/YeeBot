@@ -126,6 +126,7 @@ class Memes:
                     print('{} vote over'.format(link))
                     if pos_vote > neg_vote:
                         memedb.approve(link)
+                        bank.deposit(ctx.message.author.id, 10)
                         await self.yeebot.delete_message(msg)
                         return await self.yeebot.say("{}'s link `{}` has been approved.".format(ctx.message.author.mention, link))
                         
@@ -134,7 +135,8 @@ class Memes:
                         await self.yeebot.delete_message(msg)
                         return await self.yeebot.say("{}'s link `{}` has been rejected.".format(ctx.message.author.mention, link))
             else:
-                print('Please only submit links from Youtube, GfyCat, Streamable, Twitch, Imgur, and Reddit. Only direct image links are accepted. Regular video links are ok.') 
+                await self.yeebot.delete_message(ctx.message)
+                return await self.yeebot.say('Please only submit links from Youtube, GfyCat, Streamable, Twitch, Imgur, and Reddit. Only direct image links are accepted. Regular video links are ok.') 
 
 def setup(yeebot):
     yeebot.add_cog(Memes(yeebot))
