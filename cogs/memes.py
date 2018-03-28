@@ -69,9 +69,10 @@ class Memes:
                     while vote_count < 4:
                         reaction = await self.yeebot.wait_for_reaction(message=msg, emoji=[THUMBS_UP, THUMBS_DOWN])
                         print('Reaction added for {}'.format(link))
-                        if reaction.reaction.emoji == THUMBS_UP:
+
+                        if reaction.reaction.emoji == THUMBS_UP and reaction.user != msg.author:
                             
-                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ?;", (reaction.user.id,))
+                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
                             row = self.cur.fetchone()
                             if row:
                                 user_vote = row[0]
@@ -80,7 +81,7 @@ class Memes:
                                     if user_vote == 'NEG':
                                         print('User already has an active vote. Removing emoji and updating row.')
                                         await self.yeebot.remove_reaction(msg, THUMBS_DOWN, reaction.user)
-                                        self.cur.execute("UPDATE votes SET vote = 'pos' WHERE voter_id = ?;", (reaction.user.id,))
+                                        self.cur.execute("UPDATE votes SET vote = 'POS' WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
                                         self.conn.commit()
                                         pos_vote += 1
                                         neg_vote -= 1
@@ -96,8 +97,9 @@ class Memes:
                                 print('Positive vote: {}'.format(pos_vote))
                                 print('Negative vote: {}'.format(neg_vote))
 
-                        elif reaction.reaction.emoji == THUMBS_DOWN:
-                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ?;", (reaction.user.id,))
+
+                        elif reaction.reaction.emoji == THUMBS_DOWN and reaction.user != msg.author:
+                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
                             row = self.cur.fetchone()
                             if row:
                                 user_vote = row[0]
@@ -105,7 +107,7 @@ class Memes:
                                     if user_vote == 'POS':
                                         print('User has an active vote. Removing emoji and updating row')
                                         await self.yeebot.remove_reaction(msg, THUMBS_UP, reaction.user)
-                                        self.cur.execute("UPDATE votes SET vote = 'neg' WHERE voter_id = ?;", (reaction.user.id,))
+                                        self.cur.execute("UPDATE votes SET vote = 'NEG' WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
                                         self.conn.commit()
                                         pos_vote -= 1
                                         neg_vote += 1
