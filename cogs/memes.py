@@ -66,7 +66,7 @@ class Memes:
                     await self.yeebot.add_reaction(msg, THUMBS_UP)
                     await self.yeebot.add_reaction(msg, THUMBS_DOWN)
                     # wait for votes on the image
-                    while vote_count < 4:
+                    while vote_count < secrets.VOTES_TO_COMPLETE:
                         reaction = await self.yeebot.wait_for_reaction(message=msg, emoji=[THUMBS_UP, THUMBS_DOWN])
                         print('Reaction added for {}'.format(link))
 
@@ -126,12 +126,15 @@ class Memes:
                     print('{} vote over'.format(link))
                     if pos_vote > neg_vote:
                         memedb.approve(link)
-                        print('{} approved.'.format(link))
+                        await self.yeebot.delete_message(msg)
+                        return await self.yeebot.say("{}'s link `{}` has been approved.".format(ctx.message.author.mention, link))
+                        
                     elif neg_vote > pos_vote:
                         memedb.reject(link)
-                        print('{} rejected.'.format(link))
+                        await self.yeebot.delete_message(msg)
+                        return await self.yeebot.say("{}'s link `{}` has been rejected.".format(ctx.message.author.mention, link))
             else:
-                print('Bad link.') 
+                print('Please only submit links from Youtube, GfyCat, Streamable, Twitch, Imgur, and Reddit. Only direct image links are accepted. Regular video links are ok.') 
 
 def setup(yeebot):
     yeebot.add_cog(Memes(yeebot))
