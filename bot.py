@@ -33,13 +33,16 @@ async def on_ready():
     print('-----')
 
     cur.execute('CREATE TABLE IF NOT EXISTS links(link text, status text, '
-                'submitter_id text, submitter_name text, reviewer_id'
-                ' text, reviewer_name text);')
+                'submitter_id text, submitter_name text);')
+
+    cur.execute('CREATE TABLE IF NOT EXISTS votes(link text, voter_id text, vote text);')
 
     cur.execute('CREATE TABLE IF NOT EXISTS users (user_id TEXT UNIQUE, username '
                 'TEXT, meme_bucks INTEGER, memes_submitted INTEGER DEFAULT 0,'
                 ' memes_requested INTEGER DEFAULT 0, memes_approved INTEGER '
                 'DEFAULT 0, memes_rejected INTEGER DEFAULT 0, PRIMARY KEY(user_id));')
+    
+    conn.commit()
 
     await yeebot.change_presence(game=discord.Game(name="Memes"))
 

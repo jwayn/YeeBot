@@ -1,6 +1,8 @@
 import random
 import discord
 from discord.ext import commands
+import wednesday
+import datetime
 
 class Misc:
     def __init__(self, yeebot):
@@ -10,10 +12,8 @@ class Misc:
     async def info(self):
         yeestring = ('**YeeBot is currently in alpha.**\n'
                      'He is being worked on by yust.\n'
-                     'Progress can be tracked at: '
-                     '<https://trello.com/b/70M7ljxB/yeebot>\n'
-                     'You can help out with building him at: '
-                     '<https://github.com/jaspric/YeeBot/>')
+                     'You can help out with building him at: <https://github.com/jaspric/YeeBot/>\n')
+
         return await self.yeebot.say(yeestring)
     
     @commands.command(hidden=True, pass_context=True)
@@ -53,6 +53,14 @@ class Misc:
                                             .format(name, die, str(this_roll)))
             else:
                 return await self.yeebot.say(elstring)
+    
+    @commands.command(pass_context=True, hidden=True)
+    async def wednesday(self, ctx):
+        await self.yeebot.delete_message(ctx.message)
+        if datetime.datetime.today().weekday() == 2:
+            return await self.yeebot.say('It is wednesday my dudes. {}'.format(random.choice(wednesday.memes)))
+        else:
+            pass
 
 def setup(yeebot):
     yeebot.add_cog(Misc(yeebot))

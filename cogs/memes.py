@@ -4,13 +4,30 @@ import re
 from discord.ext import commands
 from discord.utils import find
 import secrets
+from bank import Bank
+from bank import Meme
+
+bank = Bank()
+memedb = Meme()
 
 i_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:imgur.com|redd.i'
             't)\/[^\ ]*(?:.gif|.gifv|.png|.jpg|.jpeg|.mp4|.apng|.tiff)$')
 v_string = ('^(?:http:\/\/|https:\/\/).*\.?(?:gfycat.com|streamable.com'
             '|youtu.be|youtube.com|twitch.tv)\/[^\ ]*')
 memebuck = '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲'
+THUMBS_UP = "\U0001F44D"
+THUMBS_DOWN = "\U0001F44E"
 
+def account_exists(ctx):
+    return bank.check_if_exists(ctx.message.author.id)
+
+def is_admin(ctx):
+    admin_roles = secrets.ADMIN_ROLES
+    user_roles = ctx.message.author.roles
+    for role in user_roles:
+        if role.name in admin_roles:
+            return True
+    return False
 
 class Memes:
     def __init__(self, yeebot):
@@ -21,407 +38,133 @@ class Memes:
         self.image_link = re.compile(i_string)
         self.video_link = re.compile(v_string)
 
-    @commands.command(pass_context=True,
-                      description='Return a random meme. Cost: 1 memebuck.')
+    @commands.check(account_exists)
+    @commands.group(pass_context=True, description='Return a random meme. Cost: 1 memebuck.')
     async def meme(self, ctx):
-        sender = ctx.message.author
-
-        meme_bucks_row = self.cur.execute("SELECT meme_bucks FROM users WHERE "
-                                          "user_id = ?;", (sender.id,))
-        meme_bucks = self.cur.fetchone()
-
-        if meme_bucks:
-            if meme_bucks[0] > 0:
-                self.cur.execute("UPDATE users SET meme_bucks = meme_bucks - 1"
-                                 " WHERE user_id = ?;", (sender.id,))
-                self.cur.execute("UPDATE users SET memes_requested = memes_req"
-                                 "uested+ 1 WHERE user_id = ?;", (sender.id,))
-                self.conn.commit()
-                self.cur.execute("SELECT link, submitter_name FROM links WHERE"
-                                 " status ='approved' ORDER BY RANDOM() LIMIT "
-                                 "1;")
-
-                row = self.cur.fetchone()
-                link = row[0]
-                submitter = row[1]
-
-                return await self.yeebot.say(link + "\n Please enjoy this deli"
-                                             "cious meme brought to you by `{}"
-                                             "`. Thank you for your patronage."
-                                             .format(submitter))
+        if ctx.invoked_subcommand is None:
+            if bank.check_balance(ctx.message.author.id) > 1:
+                bank.withdraw(ctx.message.author.id, 1)
+                returned_meme = memedb.retrieve(user=ctx.message.author)
+                return await self.yeebot.say('{} Please enjoy this delicious meme brought to you by {}'.format(returned_meme[0], returned_meme[1]))
             else:
-                return await self.yeebot.say("Sorry, you don't have enough mem"
-                                             "ebucks to complete this transact"
-                                             "ion. Submit some memes with `!ad"
-                                             "dmeme <https://link.to.meme/meme"
-                                             ">` to get some more!")
-        else:
-            return await self.yeebot.say('Sorry, you need a bank of mememerica'
-                                         ' account to complete this transactio'
-                                         'n. Use `!memebucks` to establish an '
-                                         'account.')
+                return await self.yeebot.say("You don't have enough memebucks to do that.")
 
-    @commands.command(pass_context=True)
-    async def addmeme(self, ctx, *args):
 
-        sender = ctx.message.author
-
-        if args:
-            v_link = self.video_link.match(args[0])
-            i_link = self.image_link.match(args[0])
-
+    @commands.check(account_exists)
+    @meme.command(pass_context=True, description="Submit a meme to be reviewed and potentially added to the database.")
+    async def add(self, ctx, link):
+        if link:
+            v_link = self.video_link.match(link)
+            i_link = self.image_link.match(link)
+            vote_count = 0
+            neg_vote = 0
+            pos_vote = 0
             if v_link or i_link:
-                self.cur.execute("SELECT submitter_name, status FROM links WHE"
-                                 "RE link = ?;", (args[0],))
-
-                link_exists = self.cur.fetchone()
-
-                if link_exists:
-
-                    submitter = link_exists[0]
-                    status = link_exists[1]
-
+                if memedb.retrieve(link=link):
                     await self.yeebot.delete_message(ctx.message)
-                    return await self.yeebot.say('That link has already been s'
-                                                 'ubmitted by `{}`. It is curr'
-                                                 'ently in status: `{}`.'
-                                                 .format(submitter, status))
+                    return await self.yeebot.say("Sorry, that link is already in the database.")
                 else:
-                    self.cur.execute("INSERT INTO links (link, status, submitt"
-                                     "er_id,submitter_name) VALUES (?, 'review"
-                                     "', ?, ?);",
-                                     (args[0], sender.id, sender.name))
-                    self.conn.commit()
-
+                    # Add the link to the database, status = review
+                    memedb.add(ctx.message.author, link)
+                    # delete the submission message
                     await self.yeebot.delete_message(ctx.message)
-                    await self.yeebot.say("Thank you for your submission, {}."
-                                          .format(sender.name))
+                    # post the image for voting
+                    msg = await self.yeebot.send_message(ctx.message.channel, 'Please vote on the following meme: {}'.format(link))
+                    # add thumbs up and thumbs down to the image
+                    await self.yeebot.add_reaction(msg, THUMBS_UP)
+                    await self.yeebot.add_reaction(msg, THUMBS_DOWN)
+                    # wait for votes on the image
+                    while vote_count < secrets.VOTES_TO_COMPLETE:
+                        reaction = await self.yeebot.wait_for_reaction(message=msg, emoji=[THUMBS_UP, THUMBS_DOWN])
+                        print('Reaction added for {}'.format(link))
 
-                    self.cur.execute("SELECT count(*) FROM links WHERE status"
-                                     " = 'review';")
-                    review_count = self.cur.fetchone()
-
-                    if review_count == 1:
-                        await self.yeebot.send_message(self.yeebot.get_channel(
-                            secrets.REVIEW_CHANNEL_ID), args[0])
-                        return await self.yeebot.send_message(self.yeebot.get_channel(
-                            secrets.REVIEW_CHANNEL_ID),
-                            'There is 1 link awaiting review.'
-                        )
-
-                    else:
-                        await self.yeebot.send_message(self.yeebot.get_channel(
-                            secrets.REVIEW_CHANNEL_ID), args[0])
-                        return await self.yeebot.send_message(self.yeebot.get_channel(
-                            secrets.REVIEW_CHANNEL_ID),
-                            'There are {} links awaiting review.'
-                            .format(review_count[0]))
-            else:
-                return await self.yeebot.say('Please only submit links from Yo'
-                                             'utube, GfyCat, Streamable, Twitc'
-                                             'h, Imgur, and Reddit. Only direc'
-                                             't image links are accepted. Regu'
-                                             'lar video links are ok.')
-        else:
-            return await self.yeebot.say('Please use the format: `!addmeme htt'
-                                         'ps://<link.to.meme/meme>`')
-
-    @commands.command(pass_context=True)
-    async def review(self, ctx, amount=1):
-        sender = ctx.message.author
-        if ctx.message.channel.id == secrets.REVIEW_CHANNEL_ID:
-
-            if amount < 1 or amount > 5:
-                return await self.yeebot.say('Please use the format `!review <'
-                                             '1-5>`')
-
-            elif amount >= 1 and amount <= 5:
-                self.cur.execute("SELECT link, submitter_name FROM links WHERE"
-                                 " status = 'review' LIMIT ?;", (amount,))
-
-                links_to_review = self.cur.fetchall()
-
-                if links_to_review:
-                    num = 1
-                    for row in links_to_review:
-                        await self.yeebot.say('{}\) Submitted by: {}, {}'
-                                              .format(num, row[1], row[0]))
-                        num += 1
-                else:
-                    return await self.yeebot.say('No links to review.')
-            else:
-                return await self.yeebot.say('Please use the format `!review <'
-                                             '1-5>` to review submitted links')
-
-        else:
-            pass
-
-    @commands.command(pass_context=True)
-    async def approve(self, ctx, amount='1'):
-        sender = ctx.message.author
-        if ctx.message.channel.id == secrets.REVIEW_CHANNEL_ID:
-
-            try:
-                if int(amount) < 1 or int(amount) > 5:
-                    return await self.yeebot.say('Please use the format `!appr'
-                                                 'ove <1-5>`')
-
-                elif int(amount) >= 1 and int(amount) <= 5:
-                    self.cur.execute("SELECT link, submitter_id FROM links WHE"
-                                     "RE status='review' LIMIT ?;", (amount,))
-
-                    links_to_approve = self.cur.fetchall()
-
-                    if links_to_approve:
-                        num = 1
-
-                        for row in links_to_approve:
-                            # grab the submitter for the link
-                            submitter = find(lambda m: m.id == row[1],
-                                             ctx.message.server.members)
-
-                            # update the row in the links table with approved
-                            self.cur.execute("UPDATE links SET status = 'appro"
-                                             "ved', reviewer_name = ?, reviewe"
-                                             "r_id = ? where link = ?;",
-                                             (sender.name, str(sender.id),
-                                              row[0]))
-                            self.conn.commit()
-
-                            # check if submitter has a row in users table
-                            self.cur.execute("SELECT user_id FROM users WHERE "
-                                             "user_id = ?;", (submitter.id,))
-                            submitter_row = self.cur.fetchone()
-                            submitter_id = submitter_row[0]
-
-                            # if they do update the user row in the db with new
-                            # balance
-                            if submitter_row:
-                                self.cur.execute("UPDATE users SET meme_bucks "
-                                                 "= meme_bucks + 10 WHERE user"
-                                                 "_id = ?;", (submitter.id,))
-                                self.conn.commit()
-
-                                self.cur.execute("SELECT meme_bucks FROM users"
-                                                 " WHERE user_id = ?;",
-                                                 (submitter.id,))
-
-                                meme_bucks_row = self.cur.fetchone()
-                                meme_bucks = meme_bucks_row[0]
-
-                                await self.yeebot.send_message(submitter,
-                                                               'Your link was '
-                                                               'approved. Your'
-                                                               ' balance is no'
-                                                               'w {}. {}'
-                                                               .format(
-                                                                   meme_bucks,
-                                                                   row[0])
-                                                               )
-
-                            # if they don't, create a row for them
+                        if reaction.reaction.emoji == THUMBS_UP and reaction.user != msg.author:
+                            
+                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
+                            row = self.cur.fetchone()
+                            if row:
+                                user_vote = row[0]
+                            
+                                if user_vote:
+                                    if user_vote == 'NEG':
+                                        print('User already has an active vote. Removing emoji and updating row.')
+                                        await self.yeebot.remove_reaction(msg, THUMBS_DOWN, reaction.user)
+                                        self.cur.execute("UPDATE votes SET vote = 'POS' WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
+                                        self.conn.commit()
+                                        pos_vote += 1
+                                        neg_vote -= 1
+                                        print('Positive vote: {}'.format(pos_vote))
+                                        print('Negative vote: {}'.format(neg_vote))
+                                    else:
+                                        print('User already made a positive vote. Do nothing.')
                             else:
-                                self.cur.execute("INSERT INTO users (user_id, "
-                                                 "username, meme_bucks) VALUES"
-                                                 " (?, ?, ?);",
-                                                 (submitter.id, ctx.submitter_name,
-                                                  110)
-                                                 )
+                                pos_vote += 1
+                                vote_count += 1
+                                self.cur.execute("INSERT INTO votes (link, voter_id, vote) VALUES(?, ?, 'POS');", (link, reaction.user.id))
                                 self.conn.commit()
+                                print('Positive vote: {}'.format(pos_vote))
+                                print('Negative vote: {}'.format(neg_vote))
 
-                                self.cur.execute("SELECT meme_bucks FROM users"
-                                                 " WHERE user_id = ?;",
-                                                 (submitter.id,))
 
-                                meme_bucks_row = self.cur.fetchone()
-                                meme_bucks = meme_bucks_row[0]
+                        elif reaction.reaction.emoji == THUMBS_DOWN and reaction.user != msg.author:
+                            self.cur.execute("SELECT vote FROM votes WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
+                            row = self.cur.fetchone()
+                            if row:
+                                user_vote = row[0]
+                                if user_vote:
+                                    if user_vote == 'POS':
+                                        print('User has an active vote. Removing emoji and updating row')
+                                        await self.yeebot.remove_reaction(msg, THUMBS_UP, reaction.user)
+                                        self.cur.execute("UPDATE votes SET vote = 'NEG' WHERE voter_id = ? AND link = ?;", (reaction.user.id, link))
+                                        self.conn.commit()
+                                        pos_vote -= 1
+                                        neg_vote += 1
+                                        print('Positive vote: {}'.format(pos_vote))
+                                        print('Negative vote: {}'.format(neg_vote))
+                                    else:
+                                        print('User already made a negative vote. Do nothing.')
+                            else:
+                                neg_vote += 1
+                                vote_count += 1
+                                self.cur.execute("INSERT INTO votes (link, voter_id, vote) VALUES(?, ?, 'NEG');", (link, reaction.user.id))
+                                self.conn.commit()
+                                print('Positive vote: {}'.format(pos_vote))
+                                print('Negative vote: {}'.format(neg_vote))
 
-                                await self.yeebot.send_message(submitter,
-                                                               'Your link was '
-                                                               'approved. A Ba'
-                                                               'nk of Memerica'
-                                                               ' account was c'
-                                                               'reated on your'
-                                                               ' behalf. Your '
-                                                               'new balance is'
-                                                               ' {} {} {}.'
-                                                               .format(
-                                                                   memebuck,
-                                                                   meme_bucks,
-                                                                   memebuck)
-                                                               )
+                    print('{} vote over'.format(link))
+                    if pos_vote > neg_vote:
+                        memedb.approve(link)
+                        bank.deposit(ctx.message.author.id, 10)
+                        await self.yeebot.delete_message(msg)
+                        return await self.yeebot.say("{}'s link `{}` has been approved.".format(ctx.message.author.mention, link))
+                        
+                    elif neg_vote > pos_vote:
+                        memedb.reject(link)
+                        await self.yeebot.delete_message(msg)
+                        return await self.yeebot.say("{}'s link `{}` has been rejected.".format(ctx.message.author.mention, link))
+            else:
+                await self.yeebot.delete_message(ctx.message)
+                return await self.yeebot.say('Please only submit links from Youtube, GfyCat, Streamable, Twitch, Imgur, and Reddit. Only direct image links are accepted. Regular video links are ok.') 
 
-                        return await self.yeebot.say('{} link(s) approved.'
-                                                     .format(amount))
-
-                    else:
-                        return await self.yeebot.say('There are no links await'
-                                                     'ing review')
-
-            except ValueError:
-
-                self.cur.execute("SELECT link, submitter_id, status FROM links"
-                                 " WHERE link = ?", (amount, ))
-
-                link_row = self.cur.fetchone()
-
-                if link_row:
-
-                    link_submitter = find(lambda m: m.id == link_row[1],
-                                          ctx.message.server.members)
-
-                    if link_row[2] == 'rejected' or link_row[2] == 'review':
-
-                        self.cur.execute("UPDATE links SET status = 'approved'"
-                                         " WHERE link = ?", (link_row[0],))
-
-                        self.cur.execute("SELECT meme_bucks FROM users WHERE user_i"
-                                    "d = ?;", (link_row[1],))
-                        meme_row = self.cur.fetchone()
-
-                        if meme_row:
-                            self.cur.execute("UPDATE users SET meme_bucks = me"
-                                             "me_bucks + 1 WHERE user_id = ?",
-                                             (link_row[1],))
-                            self.con.commit()
-
-                            self.cur.execute("SELECT meme_bucks FROM users WHE"
-                                             "RE user_id = ?;", (link_row[1],))
-
-                            await self.yeebot.send_message(link_submitter,
-                                                           'Your link `{}` has'
-                                                           ' been approved. Yo'
-                                                           'ur new balance is '
-                                                           '{}.'
-                                                           .format(link_row[0],
-                                                                   meme_row[0]
-                                                                   ))
-                        else:
-                            self.cur.execute("INSERT INTO users (user_id, user"
-                                             "name, meme_bucks) VALUES (?, ?, "
-                                             "?);",
-                                             (ctx.submitter.id,
-                                              ctx.submitter_name,
-                                              110))
-                            self.conn.commit()
-                            await self.yeebot.send_message(link_submitter,
-                                                           'Your link `{}` was'
-                                                           ' approved, and a B'
-                                                           'ank of Memerica ac'
-                                                           'count was establis'
-                                                           'hed on your behalf'
-                                                           '. Your new balance'
-                                                           ' is {} 110 {}. Hap'
-                                                           'py meming!'
-                                                           .format(link_row[0],
-                                                                   memebuck,
-                                                                   memebuck))
-
-                        return await self.yeebot.say('`{}` has been approved.'
-                                                     .format(link_row[0]))
-
-                    else:
-                        return await self.yeebot.say('That link is already app'
-                                                     'roved.')
-
-                else:
-                    return await self.yeebot.say("Link hasn't been submitted.")
-
-    @commands.command(pass_context=True)
-    async def reject(self, ctx, amount='1'):
-
-        sender = ctx.message.author
-
-        if ctx.message.channel.id == secrets.REVIEW_CHANNEL_ID:
-            try:
-                if int(amount) < 1 or int(amount) > 5:
-                    return await self.yeebot.say('Please use the format `!reje'
-                                                 'ct <1-5|link>`')
-
-                elif 1 <= int(amount) <= 5:
-                    self.cur.execute("SELECT link, submitter_id FROM links WHE"
-                                     "RE status = 'review' LIMIT ?;",
-                                     (amount,))
-                    rows = self.cur.fetchall()
-
-                    for row in rows:
-                        link_submitter = find(lambda m: m.id == row[1],
-                                              ctx.message.server.members)
-
-                        self.cur.execute("UPDATE links SET status = 'rejected'"
-                                         " WHERE link =?", (row[0],))
-                        self.conn.commit()
-                        await self.yeebot.send_message(link_submitter,
-                                                       'Your link {} has been '
-                                                       'rejected.'
-                                                       .format(row[0]))
-
-                    return await self.yeebot.say('{} link(s) rejected.'
-                                                 .format(amount))
-
-            except ValueError:
-                self.cur.execute("SELECT link, submitter_id, status FROM links"
-                                 " WHERE link = ?;", (amount,))
-
-                row = self.cur.fetchone()
-
-                if row:
-
-                    link_submitter = find(lambda m: m.id == row[1],
-                                          ctx.message.server.members)
-
-                    if row[2] == 'approved':
-                        # take away money, and set to rejected
-                        self.cur.execute("UPDATE links SET status = 'rejected'"
-                                         " WHERE link = ?", (row[0],))
-                        self.cur.execute("SELECT meme_bucks FROM users WHERE u"
-                                         "ser_id = ?", (row[1],))
-                        bucks_row = self.cur.fetchone()
-                        meme_bucks = bucks_row[0]
-                        if meme_bucks - 10 < 0:
-                            self.cur.execute("UPDATE users SET meme_bucks = 0 "
-                                             "WHERE user_id = ?", (row[1],))
-                        else:
-                            self.cur.execute("UPDATE users SET meme_bucks = me"
-                                             "me_bucks - 10 WHERE user_id = ?",
-                                             (row[1],))
-                        self.conn.commit()
-
-                        # send message to user with balance
-                        # and link in question
-                        self.cur.execute("SELECT meme_bucks FROM users WHERE u"
-                                         "ser_id = ?", (row[1],))
-
-                        balance_row = self.cur.fetchone()
-                        balance = balance_row[0]
-
-                        await self.yeebot.send_message(link_submitter,
-                                                       'Your link {} has been '
-                                                       'rejected. Your new bal'
-                                                       'ance is {}. Thanks for'
-                                                       ' trying.'
-                                                       .format(row[0],
-                                                               balance))
-
-                    else:
-                        # set to rejected
-                        self.cur.execute("UPDATE links SET status = 'rejected'"
-                                         " WHERE link=?;", (row[0],))
-                        # send message to user with link in question
-                        await self.yeebot.send_message(link_submitter,
-                                                       'Your link {} has been '
-                                                       'rejected. Thanks for t'
-                                                       'rying.'
-                                                       .format(row[0]))
-
-                    return await self.yeebot.say('`{}` has been rejected.'
-                                                 .format(row[0]))
-
-                else:
-                    return await self.yeebot.say("That link doesn't exist in t"
-                                                 "he database.")
+    @commands.check(is_admin)
+    @meme.command(pass_context=True, hidden=True)
+    async def reject(self, ctx, link):
+        if link:
+            memedb.reject(link)
+            await self.yeebot.delete_message(ctx.message)
+            return await self.yeebot.say('<{}> has been rejected.'.format(link))
         else:
-            pass
+            return await self.yeebot.say('Reject what?')
+        
+    @commands.check(is_admin)
+    @meme.command(pass_context=True, hidden=True)
+    async def approve (self, ctx, link):
+        if link:
+            memedb.approve(link)
+            await self.yeebot.delete_message(ctx.message)
+            return await self.yeebot.say('<{}> has been approved.'.format(link))
+        else:
+            return await self.yeebot.say('Approve what?')
 
 
 def setup(yeebot):

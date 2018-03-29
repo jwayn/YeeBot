@@ -51,11 +51,11 @@ class Stats:
             submissions.append(row[1])
 
         for name in names:
-            self.cur.execute("select count (*) from links where status = 'approved' and "
+            self.cur.execute("select count (*) from links where status = 'APPROVED' and "
                         "submitter_name = ?;", (name,))
             num_appr = self.cur.fetchone()
             approved.append(int(num_appr[0]))
-            self.cur.execute("select count (*) from links where status = 'rejected' and "
+            self.cur.execute("select count (*) from links where status = 'REJECTED' and "
                         "submitter_name = ?;", (name,))
             num_rej = self.cur.fetchone()
             rejected.append(int(num_rej[0]))
@@ -72,7 +72,8 @@ class Stats:
 
         bar_heights = []
         percentages = []
-
+        print(approved)
+        print(rejected)
         for x in range(0, len(approved)):
             percentages.append(int(100 * (approved[x] / (approved[x] + rejected[x]))))
 
@@ -103,6 +104,10 @@ class Stats:
         plt.figlegend((approved_bar, rejected_bar),
                       ('Approved', 'Rejected'),
                       'upper right')
+        
+        if not os.path.exists('./cogs/output'):
+            os.makedirs('./cogs/output')
+
         plt.savefig('cogs/output/stats.png')
        
         yeestring = '```\n'
@@ -110,6 +115,7 @@ class Stats:
             yeestring += '{}: {}% approval rate.\n'.format(names[x], percentages[x])
         yeestring += '```'
         
+
         await self.yeebot.send_file(channel, 'cogs/output/stats.png')
         return await self.yeebot.say(yeestring)
 
