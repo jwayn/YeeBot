@@ -104,6 +104,10 @@ class Stats:
         plt.figlegend((approved_bar, rejected_bar),
                       ('Approved', 'Rejected'),
                       'upper right')
+        
+        if not os.path.exists('./cogs/output'):
+            os.makedirs('./cogs/output')
+
         plt.savefig('cogs/output/stats.png')
        
         yeestring = '```\n'
@@ -111,6 +115,7 @@ class Stats:
             yeestring += '{}: {}% approval rate.\n'.format(names[x], percentages[x])
         yeestring += '```'
         
+
         await self.yeebot.send_file(channel, 'cogs/output/stats.png')
         return await self.yeebot.say(yeestring)
 
