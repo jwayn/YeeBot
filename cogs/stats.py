@@ -51,11 +51,11 @@ class Stats:
             submissions.append(row[1])
 
         for name in names:
-            self.cur.execute("select count (*) from links where status = 'approved' and "
+            self.cur.execute("select count (*) from links where status = 'APPROVED' and "
                         "submitter_name = ?;", (name,))
             num_appr = self.cur.fetchone()
             approved.append(int(num_appr[0]))
-            self.cur.execute("select count (*) from links where status = 'rejected' and "
+            self.cur.execute("select count (*) from links where status = 'REJECTED' and "
                         "submitter_name = ?;", (name,))
             num_rej = self.cur.fetchone()
             rejected.append(int(num_rej[0]))
@@ -72,9 +72,10 @@ class Stats:
 
         bar_heights = []
         percentages = []
-
+        print(approved)
+        print(rejected)
         for x in range(0, len(approved)):
-            percentages.append(int(100 * (approved[x] / (approved[x] + rejected[x]))))
+            percentages.append(int(100 * (approved[x] / (approved[x] + rejected[x] + 1))))
 
         for container in rejected_bar:
             bar_heights.append(container.get_height())
