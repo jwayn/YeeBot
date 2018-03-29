@@ -75,7 +75,7 @@ class Stats:
         print(approved)
         print(rejected)
         for x in range(0, len(approved)):
-            percentages.append(int(100 * (approved[x] / (approved[x] + rejected[x] + 1))))
+            percentages.append(int(100 * (approved[x] / (approved[x] + rejected[x]))))
 
         for container in rejected_bar:
             bar_heights.append(container.get_height())
