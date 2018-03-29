@@ -21,6 +21,14 @@ THUMBS_DOWN = "\U0001F44E"
 def account_exists(ctx):
     return bank.check_if_exists(ctx.message.author.id)
 
+def is_admin(ctx):
+    admin_roles = secrets.ADMIN_ROLES
+    user_roles = ctx.message.author.roles
+    for role in user_roles:
+        if role.name in admin_roles:
+            return True
+    return False
+
 class Memes:
     def __init__(self, yeebot):
         self.yeebot = yeebot
@@ -137,6 +145,27 @@ class Memes:
             else:
                 await self.yeebot.delete_message(ctx.message)
                 return await self.yeebot.say('Please only submit links from Youtube, GfyCat, Streamable, Twitch, Imgur, and Reddit. Only direct image links are accepted. Regular video links are ok.') 
+
+    @commands.check(is_admin)
+    @meme.command(pass_context=True, hidden=True)
+    async def reject(self, ctx, link):
+        if link:
+            memedb.reject(link)
+            await self.yeebot.delete_message(ctx.message)
+            return await self.yeebot.say('<{}> has been rejected.'.format(link))
+        else:
+            return await self.yeebot.say('Reject what?')
+        
+    @commands.check(is_admin)
+    @meme.command(pass_context=True, hidden=True)
+    async def approve (self, ctx, link):
+        if link:
+            memedb.approve(link)
+            await self.yeebot.delete_message(ctx.message)
+            return await self.yeebot.say('<{}> has been approved.'.format(link))
+        else:
+            return await self.yeebot.say('Approve what?')
+
 
 def setup(yeebot):
     yeebot.add_cog(Memes(yeebot))

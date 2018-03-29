@@ -56,8 +56,9 @@ class Misc:
     
     @commands.command(pass_context=True, hidden=True)
     async def wednesday(self, ctx):
-        if datetime.datetime.today().weekday() == 3:
-            return await self.yeebot.say('It is wednesday my dudes. {}'.format(random.choice(wednesday.memes))
+        await self.yeebot.delete_message(ctx.message)
+        if datetime.datetime.today().weekday() == 2:
+            return await self.yeebot.say('It is wednesday my dudes. {}'.format(random.choice(wednesday.memes)))
         else:
             pass
 
