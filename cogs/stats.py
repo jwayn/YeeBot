@@ -104,12 +104,25 @@ class Stats:
         plt.figlegend((approved_bar, rejected_bar),
                       ('Approved', 'Rejected'),
                       'upper right')
-        
-        if not os.path.exists('./cogs/output'):
-            os.makedirs('./cogs/output')
+
+
+        # create the directory for the file if it does not exist.
+        try:
+            if not os.path.exists('./cogs/output'):
+                os.makedirs('./cogs/output')
+        except OSError:
+            return await self.yeebot.say('Sorry, something fucked up when I tried to make the stats image.')
+
+        # remove the file if it exists so that it isn't double written.
+        try:
+            os.remove('./cogs/output/stats.png')
+        except OSError:
+            pass
+
 
         plt.savefig('cogs/output/stats.png')
-       
+        plt.close()
+
         yeestring = '```\n'
         for x in range(0, len(names)):
             yeestring += '{}: {}% approval rate.\n'.format(names[x], percentages[x])
@@ -117,6 +130,7 @@ class Stats:
         
 
         await self.yeebot.send_file(channel, 'cogs/output/stats.png')
+
         return await self.yeebot.say(yeestring)
 
 
