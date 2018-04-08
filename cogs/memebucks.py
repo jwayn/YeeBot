@@ -24,7 +24,7 @@ class Memebucks:
                 return await self.yeebot.say('What would you like to do with memebucks? !help memebucks for more.') 
             else:
                 self.cur.execute("INSERT INTO users (user_id, username, meme_bucks) VALUES (?,?,?);",
-                                 (sender.id, sender.name, 100))
+                                 (ctx.message.author.id, ctx.message.author.name, 100))
                 self.conn.commit()
                 return await self.yeebot.say('Congratulations! You have establish'
                                              'ed an account with the Bank of Meme'
