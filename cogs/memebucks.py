@@ -42,15 +42,17 @@ class Memebucks:
     @memebucks.command(pass_context=True, description='Give some of your memebucks to someone else. !memebucks give <@user_mention> <amount to give>')
     async def give(self, ctx, user:discord.User, amount:int):
         balance = bank.check_balance(ctx.message.author.id)
-        if balance >= amount:
-            if bank.check_if_exists(user.id):
-                bank.transfer(ctx.message.author.id, user.id, amount)
-                return await self.yeebot.say('{} memebucks given to {}.'.format(amount, user.name))
+        if amount > 0:    
+            if balance >= amount:
+                if bank.check_if_exists(user.id):
+                    bank.transfer(ctx.message.author.id, user.id, amount)
+                    return await self.yeebot.say('{} memebucks given to {}.'.format(amount, user.name))
+                else:
+                    return await self.yeebot.say("That user hasn't made an account yet! No memebucks transferred.")
             else:
-                return await self.yeebot.say("That user hasn't made an account yet! No memebucks transferred.")
+                return await self.yeebot.say('Sorry, you need more memebucks to do that.')
         else:
-            return await self.yeebot.say('Sorry, you need more memebucks to do that.')
-
+            return await self.yeebot.say("You can't give negative memebucks.")
 
 def setup(yeebot):
     yeebot.add_cog(Memebucks(yeebot))
